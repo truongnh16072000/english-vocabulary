@@ -1288,7 +1288,7 @@ const B1Vocabulary = () => {
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md text-white mb-2 inline-block ${topicConfig[item.topic].color}`}>
                       {topicConfig[item.topic].label}
                     </span>
-                    <h3 className="text-xl font-black text-slate-800 capitalize group-hover:text-teal-600 transition-colors">{item.word}</h3>
+                    <h3 className="text-xl font-black text-slate-800 capitalize group-hover:text-teal-600 transition-colors break-words">{item.word}</h3>
                     <p className="text-slate-400 text-sm font-medium mt-1">{item.ipa} • <span className="text-teal-500 italic">{item.pos}</span></p>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1358,7 +1358,7 @@ const B1Vocabulary = () => {
                 <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
                    {topicConfig[filteredVocab[currentFlashcard].topic].icon}
                 </div>
-                <h2 className="text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center">{filteredVocab[currentFlashcard].word}</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center break-words px-4 leading-tight">{filteredVocab[currentFlashcard].word}</h2>
                 <p className="text-slate-400 text-2xl font-medium tracking-wide">{filteredVocab[currentFlashcard].ipa}</p>
                 <div className="mt-16 flex items-center gap-3 text-slate-300 text-xs font-black uppercase tracking-[0.2em]">
                   <Play className="w-4 h-4" /> Chạm để lật thẻ
@@ -1456,7 +1456,7 @@ const B1Vocabulary = () => {
 
                 <div className="text-center mb-12">
                   <p className="text-slate-400 text-sm font-bold mb-4 uppercase tracking-widest">Từ này nghĩa là gì?</p>
-                  <h3 className="text-6xl font-black text-slate-800 capitalize mb-8 tracking-tighter">{quizPool[quizIndex]?.word}</h3>
+                  <h3 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-800 capitalize mb-6 sm:mb-8 tracking-tighter break-words px-2">{quizPool[quizIndex]?.word}</h3>
                   <button 
                     onClick={() => speak(quizPool[quizIndex]?.word)} 
                     className="p-4 bg-teal-50 rounded-full text-teal-500 hover:text-teal-700 transition-all hover:scale-110 active:scale-90"
@@ -1470,7 +1470,7 @@ const B1Vocabulary = () => {
                     <button
                       key={idx} 
                       onClick={() => !selectedAnswer && handleQuizAnswer(option)}
-                      className={`w-full p-6 rounded-3xl text-left border-4 transition-all font-black text-lg shadow-sm flex justify-between items-center group ${
+                      className={`w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-left border-2 sm:border-4 transition-all font-black text-base sm:text-lg shadow-sm flex justify-between items-center group ${
                         selectedAnswer === option 
                           ? (option === quizPool[quizIndex]?.meaning ? 'bg-emerald-50 border-emerald-500 text-emerald-700 scale-[1.03]' : 'bg-rose-50 border-rose-500 text-rose-700 shake') 
                           : selectedAnswer && option === quizPool[quizIndex]?.meaning 
@@ -1478,7 +1478,7 @@ const B1Vocabulary = () => {
                           : 'bg-white border-slate-100 hover:border-teal-400 hover:bg-slate-50'
                       }`}
                     >
-                      <span className="truncate pr-4">{option}</span>
+                      <span className="flex-1 pr-2 sm:pr-4 leading-tight">{option}</span>
                       {selectedAnswer === option && (
                         option === quizPool[quizIndex]?.meaning ? <CheckCircle className="w-6 h-6" /> : <RotateCcw className="w-6 h-6" />
                       )}
@@ -1494,7 +1494,7 @@ const B1Vocabulary = () => {
                 <h2 className="text-4xl font-black text-slate-800 mb-4 uppercase">KẾT QUẢ</h2>
                 <p className="text-slate-500 font-bold mb-12 italic text-lg">Bạn đã chinh phục được {quizScore} trên {quizPool.length} thử thách!</p>
                 
-                <div className="grid grid-cols-2 gap-4 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                      <div className="text-3xl font-black text-teal-600">{Math.round((quizScore / quizPool.length) * 100)}%</div>
                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Độ chính xác</div>
