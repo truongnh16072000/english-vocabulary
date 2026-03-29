@@ -10,7 +10,7 @@ import {
   Eye, EyeOff, Trophy
 } from 'lucide-react';
 
-/* * KỸ THUẬT SIÊU NÉN DỮ LIỆU (STRING COMPRESSION) CHO B1
+/* * KỸ THUẬT SIÊU NÉN DỮ LIỆU (STRING COMPRESSION) CHO B2
  * Định dạng: word|ipa|pos|meaning|topic_code|example|translation|synonyms|collocations
  * Mã Topic: T (Travel), H (Health), W (Work & Edu), N (Nature), E (Leisure), L (Life), F (Feelings), G (General)
  */
@@ -975,53 +975,53 @@ const callGeminiAPI = async (prompt) => {
   }
 };
 
-const B1Vocabulary = () => {
+const B2Vocabulary = () => {
   const [activeTab, setActiveTab] = useState('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTopic, setFilterTopic] = useState('All');
   const [currentFlashcard, setCurrentFlashcard] = useState(() => {
-    const saved = localStorage.getItem('b1_flashcard_progress');
+    const saved = localStorage.getItem('b2_flashcard_progress');
     return saved ? parseInt(saved, 10) : 0;
   });
 
   useEffect(() => {
-    localStorage.setItem('b1_flashcard_progress', currentFlashcard);
+    localStorage.setItem('b2_flashcard_progress', currentFlashcard);
   }, [currentFlashcard]);
   const [isFlipped, setIsFlipped] = useState(false);
   
   // Quiz Persistence
   const [quizSize, setQuizSize] = useState(() => {
-    const saved = localStorage.getItem('b1_quiz_size');
+    const saved = localStorage.getItem('b2_quiz_size');
     return saved ? parseInt(saved, 10) : 10;
   });
   const [quizActive, setQuizActive] = useState(() => {
-    return localStorage.getItem('b1_quiz_active') === 'true';
+    return localStorage.getItem('b2_quiz_active') === 'true';
   });
   const [quizPool, setQuizPool] = useState(() => {
-    const saved = localStorage.getItem('b1_quiz_pool');
+    const saved = localStorage.getItem('b2_quiz_pool');
     return saved ? JSON.parse(saved) : [];
   });
   const [quizIndex, setQuizIndex] = useState(() => {
-    const saved = localStorage.getItem('b1_quiz_index');
+    const saved = localStorage.getItem('b2_quiz_index');
     return saved ? parseInt(saved, 10) : 0;
   });
   const [quizScore, setQuizScore] = useState(() => {
-    const saved = localStorage.getItem('b1_quiz_score');
+    const saved = localStorage.getItem('b2_quiz_score');
     return saved ? parseInt(saved, 10) : 0;
   });
   const [quizFinished, setQuizFinished] = useState(() => {
-    return localStorage.getItem('b1_quiz_finished') === 'true';
+    return localStorage.getItem('b2_quiz_finished') === 'true';
   });
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [quizOptions, setQuizOptions] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem('b1_quiz_size', quizSize);
-    localStorage.setItem('b1_quiz_active', quizActive);
-    localStorage.setItem('b1_quiz_pool', JSON.stringify(quizPool));
-    localStorage.setItem('b1_quiz_index', quizIndex);
-    localStorage.setItem('b1_quiz_score', quizScore);
-    localStorage.setItem('b1_quiz_finished', quizFinished);
+    localStorage.setItem('b2_quiz_size', quizSize);
+    localStorage.setItem('b2_quiz_active', quizActive);
+    localStorage.setItem('b2_quiz_pool', JSON.stringify(quizPool));
+    localStorage.setItem('b2_quiz_index', quizIndex);
+    localStorage.setItem('b2_quiz_score', quizScore);
+    localStorage.setItem('b2_quiz_finished', quizFinished);
   }, [quizSize, quizActive, quizPool, quizIndex, quizScore, quizFinished]);
 
   // AI Modal States
@@ -1035,12 +1035,12 @@ const B1Vocabulary = () => {
   // Trạng thái từ đã học
   const [showLearned, setShowLearned] = useState(false);
   const [learnedWords, setLearnedWords] = useState(() => {
-    const saved = localStorage.getItem('b1_learned_words');
+    const saved = localStorage.getItem('b2_learned_words');
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('b1_learned_words', JSON.stringify(learnedWords));
+    localStorage.setItem('b2_learned_words', JSON.stringify(learnedWords));
   }, [learnedWords]);
 
   const toggleLearned = (word) => {
@@ -1058,7 +1058,7 @@ const B1Vocabulary = () => {
 
   // Danh mục Topic
   const topicConfig = {
-    'All': { label: 'Tất cả', icon: <LayoutGrid className="w-4 h-4" />, color: 'bg-teal-600' },
+    'All': { label: 'Tất cả', icon: <LayoutGrid className="w-4 h-4" />, color: 'bg-emerald-600' },
     'Travel': { label: 'Du lịch', icon: <Plane className="w-4 h-4" />, color: 'bg-blue-500' },
     'Health': { label: 'Sức khỏe', icon: <Heart className="w-4 h-4" />, color: 'bg-red-500' },
     'Work & Edu': { label: 'Học & Làm', icon: <GraduationCap className="w-4 h-4" />, color: 'bg-amber-600' },
@@ -1161,7 +1161,7 @@ const B1Vocabulary = () => {
   const handleExplainWord = async (wordObj) => {
     setAiMode('explain');
     setIsAiLoading(true);
-    const prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B1. Trình bày ngắn gọn, dễ hiểu.`;
+    const prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B2. Trình bày ngắn gọn, dễ hiểu.`;
     const response = await callGeminiAPI(prompt);
     setAiResponse(response);
     setIsAiLoading(false);
@@ -1188,7 +1188,7 @@ const B1Vocabulary = () => {
         const level = trimmedLine.match(/^#+/)[0].length;
         const content = trimmedLine.replace(/^#+\s*/, '');
         const sizeClass = level === 1 ? 'text-xl' : level === 2 ? 'text-lg' : 'text-md';
-        return <h4 key={i} className={`${sizeClass} font-black text-teal-700 mt-4 mb-2`}>{content}</h4>;
+        return <h4 key={i} className={`${sizeClass} font-black text-emerald-700 mt-4 mb-2`}>{content}</h4>;
       }
 
       // List check
@@ -1196,7 +1196,7 @@ const B1Vocabulary = () => {
         const content = trimmedLine.replace(/^[-*]\s*/, '');
         return (
           <div key={i} className="flex gap-3 mb-2 ml-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-2 shrink-0"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 shrink-0"></div>
             <p className="text-[15px] leading-relaxed flex-1">{renderBoldText(content)}</p>
           </div>
         );
@@ -1214,7 +1214,7 @@ const B1Vocabulary = () => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, j) => 
       part.startsWith('**') && part.endsWith('**') 
-        ? <strong key={j} className="text-teal-900">{part.slice(2, -2)}</strong> 
+        ? <strong key={j} className="text-emerald-900">{part.slice(2, -2)}</strong> 
         : part
     );
   };
@@ -1222,36 +1222,36 @@ const B1Vocabulary = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-10">
       {/* Inner Tabs for Vocabulary App - Aligned with A2 style */}
-      <div className="max-w-6xl mx-auto px-4 py-4 border-b border-slate-100 mb-6">
-        <nav className="flex bg-slate-100 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
-          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <LayoutGrid className="w-4 h-4" /> <span className="hidden xs:inline">Danh sách</span> ({filteredVocab.length})
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 py-4 border-b border-slate-100 mb-6 font-sans">
+        <nav className="flex bg-slate-100 p-1 rounded-xl sm:rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
+          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-500'}`}>
+            <LayoutGrid className="w-4 h-4" /> <span className="inline">Danh sách</span>
           </button>
-          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <Brain className="w-4 h-4" /> <span className="hidden xs:inline">Thẻ nhớ</span>
+          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-500'}`}>
+            <Brain className="w-4 h-4" /> <span className="inline">Thẻ nhớ</span>
           </button>
-          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <CheckCircle className="w-4 h-4" /> <span className="hidden xs:inline">Kiểm tra</span>
+          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-500'}`}>
+            <CheckCircle className="w-4 h-4" /> <span className="inline">Kiểm tra</span>
           </button>
         </nav>
       </div>
 
 
-      <main className="max-w-6xl mx-auto p-4 md:p-6 lg:p-10">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-10">
         <div className="mb-8 space-y-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-teal-500 transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-emerald-500 transition-colors" />
               <input 
                 type="text" placeholder="Tra cứu từ vựng, nghĩa, hoặc từ đồng nghĩa..." 
-                className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none shadow-sm transition-all"
+                className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 outline-none shadow-sm transition-all"
                 value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
             <button 
               onClick={() => setShowLearned(!showLearned)}
-              className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all border ${showLearned ? 'bg-teal-600 text-white border-teal-600 shadow-teal-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+              className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all border ${showLearned ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
             >
               {showLearned ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
               {showLearned ? 'Đang hiện từ đã học' : 'Đang ẩn từ đã học'}
@@ -1270,7 +1270,7 @@ const B1Vocabulary = () => {
                   setQuizFinished(false);
                   playSound('select');
                 }}
-                className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${filterTopic === topic ? 'bg-teal-600 text-white border-teal-600 shadow-teal-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${filterTopic === topic ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
               >
                 {topicConfig[topic].icon}
                 {topicConfig[topic].label}
@@ -1288,11 +1288,11 @@ const B1Vocabulary = () => {
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md text-white mb-2 inline-block ${topicConfig[item.topic].color}`}>
                       {topicConfig[item.topic].label}
                     </span>
-                    <h3 className="text-xl font-black text-slate-800 capitalize group-hover:text-teal-600 transition-colors">{item.word}</h3>
-                    <p className="text-slate-400 text-sm font-medium mt-1">{item.ipa} • <span className="text-teal-500 italic">{item.pos}</span></p>
+                    <h3 className="text-xl font-black text-slate-800 capitalize group-hover:text-emerald-600 transition-colors">{item.word}</h3>
+                    <p className="text-slate-400 text-sm font-medium mt-1">{item.ipa} • <span className="text-emerald-500 italic">{item.pos}</span></p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button onClick={() => speak(item.word)} className="p-3 rounded-full bg-slate-50 text-teal-600 hover:bg-teal-600 hover:text-white transition shadow-sm active:scale-90">
+                    <button onClick={() => speak(item.word)} className="p-3 rounded-full bg-slate-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition shadow-sm active:scale-90">
                       <Volume2 className="w-5 h-5" />
                     </button>
                     <button 
@@ -1307,17 +1307,17 @@ const B1Vocabulary = () => {
                 
                 <p className="text-slate-800 font-bold text-base mb-4 relative z-10">💡 {item.meaning}</p>
                 
-                <div className="bg-teal-50/50 p-4 rounded-2xl border-l-4 border-teal-400 flex-grow flex flex-col relative z-10">
+                <div className="bg-emerald-50/50 p-4 rounded-2xl border-l-4 border-emerald-400 flex-grow flex flex-col relative z-10">
                   <p className="text-sm text-slate-600 mb-2 leading-relaxed italic">"{item.example}"</p>
                   <p className="text-[11px] text-slate-400 font-bold uppercase mb-4">{item.translation}</p>
                   
-                  <div className="mt-auto pt-3 border-t border-teal-100/50 flex flex-col gap-1.5">
+                  <div className="mt-auto pt-3 border-t border-emerald-100/50 flex flex-col gap-1.5">
                     <div className="text-[11px]">
-                      <span className="font-bold text-teal-700 mr-1">🔗 Đồng nghĩa:</span>
+                      <span className="font-bold text-emerald-700 mr-1">🔗 Đồng nghĩa:</span>
                       <span className="text-slate-600">{item.synonyms}</span>
                     </div>
                     <div className="text-[11px]">
-                      <span className="font-bold text-teal-700 mr-1">📝 Cụm từ hay:</span>
+                      <span className="font-bold text-emerald-700 mr-1">📝 Cụm từ hay:</span>
                       <span className="text-slate-600">{item.collocations}</span>
                     </div>
                   </div>
@@ -1333,8 +1333,8 @@ const B1Vocabulary = () => {
             ))}
             {filteredVocab.length === 0 && (
               <div className="col-span-full py-32 text-center">
-                <div className="bg-teal-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-teal-300" />
+                <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-emerald-300" />
                 </div>
                 <p className="text-slate-400 font-bold italic text-lg">Hổng thấy từ nào khớp hết trơn...</p>
               </div>
@@ -1344,7 +1344,7 @@ const B1Vocabulary = () => {
 
         {activeTab === 'flashcard' && filteredVocab.length > 0 && (
           <div className="flex flex-col items-center py-12 space-y-10 relative">
-            <div className="bg-teal-100 text-teal-700 px-6 py-2 rounded-full text-sm font-black shadow-sm ring-4 ring-white">
+            <div className="bg-emerald-100 text-emerald-700 px-6 py-2 rounded-full text-sm font-black shadow-sm ring-4 ring-white">
               TỪ {currentFlashcard + 1} TRÊN {filteredVocab.length}
             </div>
 
@@ -1367,19 +1367,19 @@ const B1Vocabulary = () => {
 
               {/* MẶT SAU */}
               <div 
-                className={`absolute inset-0 bg-teal-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 bg-emerald-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
                 style={{ transform: 'rotateY(180deg)' }}
               >
-                <span className="text-teal-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
-                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-teal-300 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
+                <span className="text-emerald-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
+                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-emerald-300 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
                 
-                <div className="w-full flex flex-col gap-1.5 mb-4 bg-teal-700/50 p-4 rounded-2xl text-left border border-teal-500/30">
-                  <p className="text-[13px]"><span className="font-bold text-teal-200">🔗 Đồng nghĩa:</span> {filteredVocab[currentFlashcard].synonyms}</p>
-                  <p className="text-[13px]"><span className="font-bold text-teal-200">📝 Cụm từ hay:</span> {filteredVocab[currentFlashcard].collocations}</p>
+                <div className="w-full flex flex-col gap-1.5 mb-4 bg-emerald-700/50 p-4 rounded-2xl text-left border border-emerald-500/30">
+                  <p className="text-[13px]"><span className="font-bold text-emerald-200">🔗 Đồng nghĩa:</span> {filteredVocab[currentFlashcard].synonyms}</p>
+                  <p className="text-[13px]"><span className="font-bold text-emerald-200">📝 Cụm từ hay:</span> {filteredVocab[currentFlashcard].collocations}</p>
                 </div>
 
-                <p className="italic text-teal-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
-                <p className="text-[11px] text-teal-200 text-center font-bold tracking-wider uppercase opacity-90">{filteredVocab[currentFlashcard].translation}</p>
+                <p className="italic text-emerald-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
+                <p className="text-[11px] text-emerald-200 text-center font-bold tracking-wider uppercase opacity-90">{filteredVocab[currentFlashcard].translation}</p>
               </div>
             </div>
 
@@ -1387,13 +1387,13 @@ const B1Vocabulary = () => {
               <button 
                 disabled={currentFlashcard === 0} 
                 onClick={() => { setCurrentFlashcard(prev => prev - 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
+                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
               >
                 <ChevronLeft className="w-8 h-8" />
               </button>
               <button 
                 onClick={() => speak(filteredVocab[currentFlashcard].word)} 
-                className="px-8 py-5 rounded-full bg-teal-600 text-white font-black hover:bg-teal-700 shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-8 ring-teal-50"
+                className="px-8 py-5 rounded-full bg-emerald-600 text-white font-black hover:bg-emerald-700 shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-8 ring-emerald-50"
               >
                 <Volume2 className="w-6 h-6" /> PHÁT ÂM
               </button>
@@ -1406,7 +1406,7 @@ const B1Vocabulary = () => {
               <button 
                 disabled={currentFlashcard === filteredVocab.length - 1} 
                 onClick={() => { setCurrentFlashcard(prev => prev + 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
+                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
               >
                 <ChevronRight className="w-8 h-8" />
               </button>
@@ -1422,10 +1422,10 @@ const B1Vocabulary = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white p-12 rounded-[50px] shadow-2xl border border-slate-100 text-center"
               >
-                <div className="w-24 h-24 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+                <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
                   <Trophy className="w-12 h-12" />
                 </div>
-                <h2 className="text-3xl font-black text-slate-800 mb-2">Thử thách trình độ B1</h2>
+                <h2 className="text-3xl font-black text-slate-800 mb-2">Thử thách trình độ B2</h2>
                 <p className="text-slate-400 font-medium mb-10 italic">Chọn số lượng từ bạn muốn kiểm tra</p>
                 
                 <div className="grid grid-cols-2 gap-4 mb-10">
@@ -1433,10 +1433,10 @@ const B1Vocabulary = () => {
                     <button 
                       key={size}
                       onClick={() => startNewQuiz(size)}
-                      className="p-5 rounded-3xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all font-black text-slate-700 active:scale-95 group"
+                      className="p-5 rounded-3xl border-2 border-slate-100 hover:border-emerald-400 hover:bg-emerald-50 transition-all font-black text-slate-700 active:scale-95 group"
                     >
-                      <div className="text-2xl group-hover:text-teal-600">{size === 'all' ? filteredVocab.length : size}</div>
-                      <div className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-teal-400">{size === 'all' ? 'Tất cả từ' : 'Từ vựng'}</div>
+                      <div className="text-2xl group-hover:text-emerald-600">{size === 'all' ? filteredVocab.length : size}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-emerald-400">{size === 'all' ? 'Tất cả từ' : 'Từ vựng'}</div>
                     </button>
                   ))}
                 </div>
@@ -1459,7 +1459,7 @@ const B1Vocabulary = () => {
                   <h3 className="text-6xl font-black text-slate-800 capitalize mb-8 tracking-tighter">{quizPool[quizIndex]?.word}</h3>
                   <button 
                     onClick={() => speak(quizPool[quizIndex]?.word)} 
-                    className="p-4 bg-teal-50 rounded-full text-teal-500 hover:text-teal-700 transition-all hover:scale-110 active:scale-90"
+                    className="p-4 bg-emerald-50 rounded-full text-emerald-500 hover:text-emerald-700 transition-all hover:scale-110 active:scale-90"
                   >
                     <Volume2 className="w-10 h-10" />
                   </button>
@@ -1475,7 +1475,7 @@ const B1Vocabulary = () => {
                           ? (option === quizPool[quizIndex]?.meaning ? 'bg-emerald-50 border-emerald-500 text-emerald-700 scale-[1.03]' : 'bg-rose-50 border-rose-500 text-rose-700 shake') 
                           : selectedAnswer && option === quizPool[quizIndex]?.meaning 
                           ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
-                          : 'bg-white border-slate-100 hover:border-teal-400 hover:bg-slate-50'
+                          : 'bg-white border-slate-100 hover:border-emerald-400 hover:bg-slate-50'
                       }`}
                     >
                       <span className="truncate pr-4">{option}</span>
@@ -1487,8 +1487,8 @@ const B1Vocabulary = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white p-16 rounded-[50px] shadow-2xl text-center border border-teal-50 animate-zoom-in">
-                <div className="w-28 h-28 bg-teal-100 text-teal-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
+              <div className="bg-white p-16 rounded-[50px] shadow-2xl text-center border border-emerald-50 animate-zoom-in">
+                <div className="w-28 h-28 bg-emerald-100 text-emerald-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
                   <Brain className="w-14 h-14" />
                 </div>
                 <h2 className="text-4xl font-black text-slate-800 mb-4 uppercase">KẾT QUẢ</h2>
@@ -1496,7 +1496,7 @@ const B1Vocabulary = () => {
                 
                 <div className="grid grid-cols-2 gap-4 mb-12">
                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                     <div className="text-3xl font-black text-teal-600">{Math.round((quizScore / quizPool.length) * 100)}%</div>
+                     <div className="text-3xl font-black text-emerald-600">{Math.round((quizScore / quizPool.length) * 100)}%</div>
                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Độ chính xác</div>
                    </div>
                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
@@ -1508,7 +1508,7 @@ const B1Vocabulary = () => {
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                   <button 
                     onClick={() => setQuizActive(false)} 
-                    className="w-full sm:w-auto px-12 py-5 bg-teal-600 text-white rounded-3xl font-black text-lg shadow-xl hover:bg-teal-700 transition-all active:scale-95"
+                    className="w-full sm:w-auto px-12 py-5 bg-emerald-600 text-white rounded-3xl font-black text-lg shadow-xl hover:bg-emerald-700 transition-all active:scale-95"
                   >
                     LÀM BÀI MỚI
                   </button>
@@ -1616,7 +1616,7 @@ const B1Vocabulary = () => {
       <footer className="max-w-6xl mx-auto px-6 py-10 text-center">
         <div className="flex items-center justify-center gap-2 text-slate-300 font-black tracking-widest uppercase text-xs">
           <BookOpen className="w-4 h-4" />
-          B1 Level Vocabulary • Có AI Gemini Hỗ Trợ
+          B2 Level Vocabulary • Có AI Gemini Hỗ Trợ
         </div>
       </footer>
 
@@ -1624,4 +1624,4 @@ const B1Vocabulary = () => {
   );
 };
 
-export default B1Vocabulary;
+export default B2Vocabulary;

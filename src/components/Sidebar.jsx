@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, BookOpen, LayoutDashboard, Settings, 
   Search, LogOut, ChevronRight, GraduationCap,
-  Sparkles, Layers
+  Sparkles, Layers, BookMarked
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playSound } from '../utils/sounds';
@@ -22,8 +22,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, color: 'text-sky-500' },
     { id: 'a2-vocab', label: 'A2 Vocabulary', icon: <BookOpen className="w-5 h-5" />, color: 'text-indigo-500' },
     { id: 'b1-vocab', label: 'B1 Vocabulary', icon: <Sparkles className="w-5 h-5" />, color: 'text-purple-500' },
+    { id: 'b2-vocab', label: 'B2 Vocabulary', icon: <BookMarked className="w-5 h-5" />, color: 'text-emerald-500' },
     { id: 'courses', label: 'All Courses', icon: <GraduationCap className="w-5 h-5" />, color: 'text-amber-500' },
-    { id: 'stats', label: 'Statistics', icon: <Layers className="w-5 h-5" />, color: 'text-emerald-500' },
+    { id: 'stats', label: 'Statistics', icon: <Layers className="w-5 h-5" />, color: 'text-slate-400' },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, color: 'text-slate-500' },
   ];
 

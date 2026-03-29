@@ -5,16 +5,17 @@ import { Loader2, Sparkles, BookOpen, GraduationCap, LayoutDashboard } from 'luc
 
 const A2Vocabulary = lazy(() => import('./components/A2Vocabulary'));
 const B1Vocabulary = lazy(() => import('./components/B1Vocabulary'));
+const B2Vocabulary = lazy(() => import('./components/B2Vocabulary'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans selection:bg-indigo-100 italic overscroll-none overflow-x-hidden">
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans selection:bg-indigo-100 italic">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="flex-1 min-w-0 p-4 md:p-8 lg:p-12 pt-20 lg:pt-12 transition-all duration-300">
+      <main className="flex-1 min-w-0 overflow-y-auto h-screen p-4 md:p-8 lg:p-12 pt-20 lg:pt-12 transition-all duration-300">
         {/* Header removed as requested */}
 
         <section className="max-w-7xl mx-auto">
@@ -47,6 +48,17 @@ const App = () => {
                 }>
                   <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
                      <B1Vocabulary />
+                  </div>
+                </Suspense>
+              ) : activeTab === 'b2-vocab' ? (
+                <Suspense fallback={
+                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+                    <p className="font-bold text-slate-400 italic">Curating your B2 vocabulary...</p>
+                  </div>
+                }>
+                  <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
+                     <B2Vocabulary />
                   </div>
                 </Suspense>
               ) : activeTab === 'dashboard' ? (

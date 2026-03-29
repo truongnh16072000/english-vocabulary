@@ -1,0 +1,1384 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Search, Volume2, BookOpen, Brain, CheckCircle, 
+  ChevronLeft, ChevronRight, RotateCcw, Play, 
+  Tags, LayoutGrid, Heart, Plane, GraduationCap, 
+  Leaf, Music, Home, Smile, Filter, Sparkles, X, Send
+} from 'lucide-react';
+
+/* * KỸ THUẬT SIÊU NÉN DỮ LIỆU (EXTREME STRING COMPRESSION) 
+ * Cấu trúc: word|ipa|pos|meaning|topic|example|translation|synonyms|collocations
+ * Danh sách đã được tinh chỉnh dung lượng để đảm bảo hệ thống hoạt động ổn định và mượt mà.
+ */
+const rawString = `abandon|/əˈbændən/|v|từ bỏ|G|Abandon it.|Từ bỏ nó.|leave|abandon ship
+absolute|/ˈæbsəluːt/|adj|tuyệt đối|G|Absolute trust.|Niềm tin tuyệt đối.|total|absolute zero
+absorb|/əbˈzɔːb/|v|hấp thụ|N|Absorb water.|Hấp thụ nước.|soak up|absorb info
+abstract|/ˈæbstrækt/|adj|trừu tượng|W|Abstract art.|Nghệ thuật trừu tượng.|theoretical|abstract concept
+abuse|/əˈbjuːs/|n|lạm dụng|G|Drug abuse.|Lạm dụng thuốc.|misuse|child abuse
+academic|/ˌækəˈdemɪk/|adj|học thuật|W|Academic year.|Năm học.|scholarly|academic success
+acceptable|/əkˈseptəbl/|adj|chấp nhận được|G|Acceptable behavior.|Hành vi chấp nhận được.|satisfactory|socially acceptable
+accompany|/əˈkʌmpəni/|v|đi cùng|G|Accompany me.|Đi cùng tôi.|escort|accompany someone
+accomplish|/əˈkʌmplɪʃ/|v|hoàn thành|W|Accomplish goals.|Hoàn thành mục tiêu.|achieve|successfully accomplish
+accurate|/ˈækjərət/|adj|chính xác|W|Accurate data.|Dữ liệu chính xác.|precise|highly accurate
+accuse|/əˈkjuːz/|v|buộc tội|G|Accuse of theft.|Buộc tội ăn cắp.|blame|falsely accuse
+acknowledge|/əkˈnɒlɪdʒ/|v|công nhận|W|Acknowledge it.|Công nhận điều đó.|admit|freely acknowledge
+acquire|/əˈkwaɪə(r)/|v|đạt được|W|Acquire skills.|Đạt kỹ năng.|obtain|acquire knowledge
+actual|/ˈæktʃuəl/|adj|thực sự|G|Actual cost.|Chi phí thực.|real|actual fact
+adapt|/əˈdæpt/|v|thích nghi|W|Adapt to change.|Thích nghi thay đổi.|adjust|adapt quickly
+adequate|/ˈædɪkwət/|adj|đầy đủ|G|Adequate supply.|Nguồn cung đủ.|sufficient|perfectly adequate
+adjust|/əˈdʒʌst/|v|điều chỉnh|G|Adjust volume.|Chỉnh âm lượng.|modify|adjust slightly
+administration|/ədˌmɪnɪˈstreɪʃn/|n|quản trị|W|Business administration.|Quản trị kinh doanh.|management|public administration
+adopt|/əˈdɒpt/|v|nhận nuôi|L|Adopt a child.|Nhận nuôi trẻ.|embrace|adopt a policy
+advance|/ədˈvɑːns/|n|tiến bộ|W|In advance.|Trước.|progress|major advance
+advantage|/ədˈvɑːntɪdʒ/|n|lợi thế|G|Take advantage.|Tận dụng.|benefit|distinct advantage
+advocate|/ˈædvəkət/|n|người ủng hộ|W|Advocate for peace.|Người ủng hộ hòa bình.|supporter|strong advocate
+affair|/əˈfeə(r)/|n|vấn đề|G|World affairs.|Vấn đề thế giới.|matter|state of affairs
+agency|/ˈeɪdʒənsi/|n|đại lý|W|Travel agency.|Đại lý du lịch.|bureau|government agency
+agenda|/əˈdʒendə/|n|lịch trình|W|On the agenda.|Trong lịch trình.|schedule|hidden agenda
+aggressive|/əˈɡresɪv/|adj|hung hăng|F|Aggressive dog.|Chó hung dữ.|hostile|aggressive behavior
+aid|/eɪd/|n|viện trợ|G|First aid.|Sơ cứu.|help|humanitarian aid
+alter|/ˈɔːltə(r)/|v|thay đổi|G|Alter plans.|Đổi kế hoạch.|change|radically alter
+amount|/əˈmaʊnt/|n|số lượng|G|Large amount.|Lượng lớn.|quantity|huge amount
+anger|/ˈæŋɡə(r)/|n|tức giận|F|Full of anger.|Tràn đầy giận dữ.|rage|express anger
+angle|/ˈæŋɡl/|n|góc độ|G|Camera angle.|Góc máy ảnh.|perspective|different angle
+annual|/ˈænjuəl/|adj|hàng năm|W|Annual report.|Báo cáo năm.|yearly|annual budget
+anticipate|/ænˈtɪsɪpeɪt/|v|dự đoán|G|Anticipate issues.|Dự đoán vấn đề.|expect|eagerly anticipate
+anxiety|/æŋˈzaɪəti/|n|lo âu|F|Feel anxiety.|Cảm thấy lo âu.|worry|severe anxiety
+anxious|/ˈæŋkʃəs/|adj|lo lắng|F|Anxious about exams.|Lo lắng kỳ thi.|nervous|feel anxious
+apparent|/əˈpærənt/|adj|rõ ràng|G|It is apparent.|Rõ ràng là.|obvious|readily apparent
+appeal|/əˈpiːl/|n|hấp dẫn|E|Mass appeal.|Sức hút đại chúng.|charm|lose its appeal
+applicant|/ˈæplɪkənt/|n|người nộp đơn|W|Job applicant.|Ứng viên.|candidate|successful applicant
+appoint|/əˈpɔɪnt/|v|bổ nhiệm|W|Appoint a manager.|Bổ nhiệm quản lý.|select|officially appoint
+appropriate|/əˈprəʊpriət/|adj|thích hợp|G|Appropriate action.|Hành động thích hợp.|suitable|highly appropriate
+approval|/əˈpruːvl/|n|chấp thuận|W|Need approval.|Cần sự chấp thuận.|consent|official approval
+approve|/əˈpruːv/|v|tán thành|W|Approve the plan.|Tán thành kế hoạch.|endorse|strongly approve
+arise|/əˈraɪz/|v|nảy sinh|G|Problems arise.|Vấn đề nảy sinh.|emerge|arise from
+armed|/ɑːmd/|adj|vũ trang|W|Armed robbery.|Cướp vũ trang.|equipped|heavily armed
+artificial|/ˌɑːtɪˈfɪʃl/|adj|nhân tạo|W|Artificial light.|Ánh sáng nhân tạo.|synthetic|artificial intelligence
+artistic|/ɑːˈtɪstɪk/|adj|nghệ thuật|E|Artistic talent.|Tài năng nghệ thuật.|creative|artistic expression
+ashamed|/əˈʃeɪmd/|adj|xấu hổ|F|Feel ashamed.|Cảm thấy xấu hổ.|guilty|deeply ashamed
+aspect|/ˈæspekt/|n|khía cạnh|G|Every aspect.|Mọi khía cạnh.|feature|crucial aspect
+assess|/əˈses/|v|đánh giá|W|Assess damage.|Đánh giá thiệt hại.|evaluate|accurately assess
+assessment|/əˈsesmənt/|n|sự đánh giá|W|Risk assessment.|Đánh giá rủi ro.|evaluation|formal assessment
+assign|/əˈsaɪn/|v|phân công|W|Assign tasks.|Giao việc.|allocate|assign homework
+assistance|/əˈsɪstəns/|n|giúp đỡ|W|Need assistance.|Cần giúp đỡ.|help|financial assistance
+assistant|/əˈsɪstəns/|n|trợ lý|W|Shop assistant.|Trợ lý cửa hàng.|helper|personal assistant
+associate|/əˈsəʊʃieɪt/|v|liên kết|G|Associate with.|Liên kết với.|connect|closely associate
+association|/əˌsəʊʃiˈeɪʃn/|n|hiệp hội|W|Medical association.|Hiệp hội y tế.|union|professional association
+assume|/əˈsjuːm/|v|giả định|G|I assume so.|Tôi cho là vậy.|presume|safely assume
+assumption|/əˈsʌmpʃn/|n|giả định|G|False assumption.|Giả định sai.|belief|basic assumption
+assure|/əˈʃʊə(r)/|v|đoan chắc|G|I assure you.|Tôi cam đoan.|guarantee|confidently assure
+attachment|/əˈtætʃmənt/|n|đính kèm|W|Email attachment.|File đính kèm.|bond|emotional attachment
+attempt|/əˈtempt/|n|nỗ lực|W|Make an attempt.|Thử nỗ lực.|effort|failed attempt
+attention|/əˈtenʃn/|n|chú ý|W|Pay attention.|Chú ý.|focus|catch attention
+attraction|/əˈtrækʃn/|n|sức hút|T|Tourist attraction.|Điểm du lịch.|appeal|major attraction
+attractive|/əˈtræktɪv/|adj|hấp dẫn|G|Attractive offer.|Đề nghị hấp dẫn.|appealing|highly attractive
+audience|/ˈɔːdiəns/|n|khán giả|E|Target audience.|Khán giả mục tiêu.|viewers|live audience
+author|/ˈɔːθə(r)/|n|tác giả|W|Famous author.|Tác giả nổi tiếng.|writer|co-author
+aware|/əˈweə(r)/|adj|nhận thức|G|Fully aware.|Nhận thức rõ.|conscious|become aware
+awareness|/əˈweənəs/|n|nhận thức|G|Raise awareness.|Nâng cao nhận thức.|understanding|public awareness
+background|/ˈbækɡraʊnd/|n|bối cảnh|W|Family background.|Hoàn cảnh gia đình.|history|educational background
+backward|/ˈbækwəd/|adj|về phía sau|G|Backward step.|Bước lùi.|reverse|backward glance
+balance|/ˈbæləns/|n|cân bằng|G|Work-life balance.|Cân bằng cuộc sống.|harmony|strike a balance
+barrier|/ˈbæriə(r)/|n|rào cản|G|Language barrier.|Rào cản ngôn ngữ.|obstacle|break barriers
+basically|/ˈbeɪsɪkli/|adv|cơ bản|G|Basically true.|Cơ bản là đúng.|essentially|basically the same
+basis|/ˈbeɪsɪs/|n|cơ sở|G|Daily basis.|Cơ sở hàng ngày.|foundation|form the basis
+bear|/beə(r)/|v|chịu đựng|F|Can't bear it.|Không thể chịu nổi.|endure|bear in mind
+beat|/biːt/|v|đánh bại|E|Beat them.|Đánh bại họ.|defeat|beat the record
+behalf|/bɪˈhɑːf/|n|thay mặt|W|On behalf of.|Thay mặt cho.|benefit|act on behalf
+behavior|/bɪˈheɪvjə(r)/|n|hành vi|G|Good behavior.|Hành vi tốt.|conduct|aggressive behavior
+belief|/bɪˈliːf/|n|niềm tin|F|Strong belief.|Niềm tin mạnh.|faith|firm belief
+belong|/bɪˈlɒŋ/|v|thuộc về|G|Belong to me.|Thuộc về tôi.|fit in|rightfully belong
+below|/bɪˈləʊ/|prep|bên dưới|G|Below average.|Dưới trung bình.|under|fall below
+belt|/belt/|n|thắt lưng|L|Seat belt.|Dây an toàn.|strap|tighten belt
+bench|/bentʃ/|n|băng ghế|L|Park bench.|Ghế đá công viên.|seat|wooden bench
+bend|/bend/|v|uốn cong|G|Bend the rules.|Lách luật.|curve|bend down
+beneath|/bɪˈniːθ/|prep|ở dưới|G|Beneath surface.|Dưới bề mặt.|under|hidden beneath
+benefit|/ˈbenɪfɪt/|n|lợi ích|G|Mutual benefit.|Lợi ích chung.|advantage|health benefit
+beside|/bɪˈsaɪd/|prep|bên cạnh|G|Sit beside me.|Ngồi cạnh tôi.|next to|right beside
+bet|/bet/|v|cá cược|E|I bet you.|Tôi cá với bạn.|gamble|safe bet
+beyond|/bɪˈjɒnd/|prep|vượt ra|G|Beyond doubt.|Không còn nghi ngờ.|past|go beyond
+biological|/ˌbaɪəˈlɒdʒɪkl/|adj|sinh học|W|Biological clock.|Đồng hồ sinh học.|organic|biological weapon
+birth|/bɜːθ/|n|sự sinh ra|L|Date of birth.|Ngày sinh.|origin|give birth
+bitter|/ˈbɪtə(r)/|adj|đắng, cay đắng|F|Bitter taste.|Vị đắng.|sour|bitter truth
+blame|/bleɪm/|v|đổ lỗi|F|Blame someone.|Đổ lỗi ai đó.|accuse|take the blame
+blank|/blæŋk/|adj|trống|G|Blank page.|Trang trắng.|empty|go blank
+blind|/blaɪnd/|adj|mù|H|Blind man.|Người mù.|sightless|blind faith
+block|/blɒk/|n|khối, tòa nhà|L|Office block.|Tòa nhà văn phòng.|building|block of ice
+blow|/bləʊ/|v|thổi|N|Wind blows.|Gió thổi.|puff|blow hard
+board|/bɔːd/|n|hội đồng|W|Board meeting.|Họp hội đồng.|committee|on board
+boast|/bəʊst/|v|khoe khoang|F|Boast about it.|Khoe khoang về nó.|brag|boast proudly
+bold|/bəʊld/|adj|táo bạo|F|Bold move.|Nước đi táo bạo.|brave|bold decision
+bond|/bɒnd/|n|liên kết|F|Strong bond.|Liên kết bền chặt.|connection|family bond
+border|/ˈbɔːdə(r)/|n|biên giới|T|Cross border.|Qua biên giới.|boundary|border control
+bore|/bɔː(r)/|v|làm chán|E|Bore to death.|Chán chết.|tire|bore stiff
+bother|/ˈbɒðə(r)/|v|làm phiền|F|Don't bother.|Đừng phiền.|annoy|can't be bothered
+bound|/baʊnd/|adj|chắc chắn|G|Bound to fail.|Chắc chắn thất bại.|certain|duty bound
+boundary|/ˈbaʊndri/|n|ranh giới|G|Push boundaries.|Phá ranh giới.|limit|cross boundary
+bow|/baʊ/|v|cúi chào|G|Bow down.|Cúi xuống.|bend|take a bow
+bowl|/bəʊl/|n|cái bát|L|Soup bowl.|Bát súp.|dish|mixing bowl
+branch|/brɑːntʃ/|n|chi nhánh|W|Bank branch.|Chi nhánh ngân hàng.|division|local branch
+brand|/brænd/|n|thương hiệu|W|Top brand.|Thương hiệu đỉnh.|label|brand name
+brave|/breɪv/|adj|dũng cảm|F|Brave soldier.|Lính dũng cảm.|fearless|very brave
+breast|/brest/|n|ngực|H|Breast cancer.|Ung thư vú.|chest|breast feed
+breath|/breθ/|n|hơi thở|H|Deep breath.|Hơi thở sâu.|gasp|out of breath
+breathe|/briːð/|v|hít thở|H|Breathe deeply.|Hít thở sâu.|inhale|hardly breathe
+breathing|/ˈbriːðɪŋ/|n|sự hô hấp|H|Heavy breathing.|Thở dốc.|respiration|stop breathing
+breed|/briːd/|v|nhân giống|N|Breed dogs.|Nhân giống chó.|reproduce|rare breed
+brick|/brɪk/|n|gạch|L|Brick wall.|Tường gạch.|block|lay bricks
+brief|/briːf/|adj|ngắn gọn|G|Brief note.|Ghi chú ngắn.|short|keep it brief
+briefly|/ˈbriːfli/|adv|ngắn gọn|G|Briefly explain.|Giải thích ngắn.|shortly|speak briefly
+brilliant|/ˈbrɪliənt/|adj|xuất sắc|F|Brilliant idea.|Ý tưởng hay.|superb|absolutely brilliant
+broad|/brɔːd/|adj|rộng|G|Broad smile.|Nụ cười rạng rỡ.|wide|broad spectrum
+broadcast|/ˈbrɔːdkɑːst/|v|phát sóng|W|Live broadcast.|Phát trực tiếp.|transmit|broadcast network
+broadly|/ˈbrɔːdli/|adv|nhìn chung|G|Broadly speaking.|Nói chung.|generally|broadly similar
+broken|/ˈbrəʊkən/|adj|bị vỡ|G|Broken window.|Cửa sổ vỡ.|damaged|broken heart
+brush|/brʌʃ/|v|chải|L|Brush teeth.|Đánh răng.|sweep|brush off
+bubble|/ˈbʌbl/|n|bong bóng|G|Soap bubble.|Bong bóng xà phòng.|foam|burst a bubble
+budget|/ˈbʌdʒɪt/|n|ngân sách|W|Tight budget.|Ngân sách eo hẹp.|funds|annual budget
+bullet|/ˈbʊlɪt/|n|viên đạn|G|Fire a bullet.|Bắn đạn.|ammo|magic bullet
+bunch|/bʌntʃ/|n|bó, chùm|G|Bunch of flowers.|Bó hoa.|cluster|bunch of keys
+burn|/bɜːn/|v|đốt cháy|G|Burn calories.|Đốt calo.|ignite|burn down
+burst|/bɜːst/|v|nổ tung|G|Burst into tears.|Bật khóc.|explode|burst a balloon
+bury|/ˈberi/|v|chôn cất|G|Bury treasure.|Chôn kho báu.|hide|bury the dead
+bush|/bʊʃ/|n|bụi cây|N|Rose bush.|Bụi hồng.|shrub|beat around the bush
+button|/ˈbʌtn/|n|nút|G|Press button.|Nhấn nút.|switch|push a button
+cabinet|/ˈkæbɪnət/|n|tủ, nội các|W|Filing cabinet.|Tủ hồ sơ.|cupboard|cabinet meeting
+cable|/ˈkeɪbl/|n|dây cáp|W|Cable TV.|Truyền hình cáp.|wire|fiber optic cable
+calculate|/ˈkælkjuleɪt/|v|tính toán|W|Calculate cost.|Tính chi phí.|compute|calculate accurately
+calculation|/ˌkælkjuˈleɪʃn/|n|sự tính toán|W|Precise calculation.|Tính toán chính xác.|math|rough calculation
+campaign|/kæmˈpeɪn/|n|chiến dịch|W|Ad campaign.|Chiến dịch quảng cáo.|movement|launch campaign
+campus|/ˈkæmpəs/|n|khuôn viên|W|College campus.|Khuôn viên trường.|grounds|on campus
+cancel|/ˈkænsl/|v|hủy bỏ|W|Cancel meeting.|Hủy họp.|call off|cancel an order
+cancer|/ˈkænsə(r)/|n|ung thư|H|Lung cancer.|Ung thư phổi.|disease|cancer research
+candidate|/ˈkændɪdət/|n|ứng viên|W|Job candidate.|Ứng viên tìm việc.|nominee|ideal candidate
+cap|/kæp/|n|mũ, nắp|L|Bottle cap.|Nắp chai.|lid|baseball cap
+capability|/ˌkeɪpəˈbɪləti/|n|năng lực|W|Military capability.|Năng lực quân sự.|ability|demonstrate capability
+capable|/ˈkeɪpəbl/|adj|có khả năng|W|Capable of doing.|Có thể làm.|competent|highly capable
+capacity|/kəˈpæsəti/|n|sức chứa|W|Full capacity.|Sức chứa tối đa.|volume|operating capacity
+capture|/ˈkæptʃə(r)/|v|bắt giữ|W|Capture moment.|Bắt khoảnh khắc.|seize|capture attention
+carbon|/ˈkɑːbən/|n|carbon|N|Carbon dioxide.|Khí CO2.|element|carbon footprint
+career|/kəˈrɪə(r)/|n|sự nghiệp|W|Successful career.|Sự nghiệp thành công.|profession|career path
+careful|/ˈkeəfl/|adj|cẩn thận|F|Be careful.|Cẩn thận.|cautious|extremely careful
+carefully|/ˈkeəfəli/|adv|một cách cẩn thận|F|Listen carefully.|Nghe kỹ.|attentively|plan carefully
+careless|/ˈkeələs/|adj|bất cẩn|F|Careless mistake.|Lỗi bất cẩn.|reckless|careless driving
+carpet|/ˈkɑːpɪt/|n|thảm|L|Red carpet.|Thảm đỏ.|rug|magic carpet
+cast|/kɑːst/|v|quăng, đúc|E|Cast a vote.|Bỏ phiếu.|throw|cast a shadow
+category|/ˈkætəɡəri/|n|hạng, loại|G|Broad category.|Thể loại rộng.|class|fall into category
+cease|/siːs/|v|ngừng|G|Cease to exist.|Ngừng tồn tại.|stop|cease fire
+ceiling|/ˈsiːlɪŋ/|n|trần nhà|L|High ceiling.|Trần cao.|roof|hit the ceiling
+celebrate|/ˈselɪbreɪt/|v|kỷ niệm|E|Celebrate birthday.|Mừng sinh nhật.|rejoice|celebrate victory
+celebration|/ˌselɪˈbreɪʃn/|n|Lễ kỷ niệm|E|Big celebration.|Kỷ niệm lớn.|party|birthday celebration
+cell|/sel/|n|tế bào|H|Brain cell.|Tế bào não.|unit|stem cell
+chain|/tʃeɪn/|n|chuỗi|L|Chain reaction.|Phản ứng chuỗi.|sequence|food chain
+chairman|/ˈtʃeəmən/|n|chủ tịch|W|Company chairman.|Chủ tịch công ty.|head|vice chairman
+challenge|/ˈtʃælɪndʒ/|n|thách thức|W|Face challenge.|Đối mặt thách thức.|test|accept challenge
+chamber|/ˈtʃeɪmbə(r)/|n|buồng|W|Gas chamber.|Phòng hơi ngạt.|room|secret chamber
+champion|/ˈtʃæmpiən/|n|nhà vô địch|E|World champion.|Vô địch thế giới.|winner|defending champion
+championship|/ˈtʃæmpiənʃɪp/|n|chức vô địch|E|Win championship.|Giành chức vô địch.|tournament|world championship
+channel|/ˈtʃænl/|n|kênh|E|TV channel.|Kênh TV.|station|change channel
+chapter|/ˈtʃæptə(r)/|n|chương|W|First chapter.|Chương đầu.|section|new chapter
+characteristic|/ˌkærəktəˈrɪstɪk/|n|đặc điểm|G|Key characteristic.|Đặc điểm chính.|trait|defining characteristic
+charge|/tʃɑːdʒ/|v|tính phí|W|Charge phone.|Sạc điện thoại.|bill|free of charge
+charity|/ˈtʃærəti/|n|từ thiện|L|Give to charity.|Cho từ thiện.|donation|local charity
+chart|/tʃɑːt/|n|biểu đồ|W|Pie chart.|Biểu đồ tròn.|graph|flow chart
+chase|/tʃeɪs/|v|đuổi theo|G|Chase dreams.|Theo đuổi giấc mơ.|pursue|give chase
+cheat|/tʃiːt/|v|gian lận|G|Cheat in exam.|Gian lận thi.|deceive|cheat death
+cheer|/tʃɪə(r)/|v|cổ vũ|E|Cheer up.|Vui lên.|encourage|loud cheer
+chemical|/ˈkemɪkl/|adj|hóa học|W|Chemical reaction.|Phản ứng hóa học.|synthetic|toxic chemical
+chemist|/ˈkemɪst/|n|nhà hóa học|W|Go to chemist.|Đi hiệu thuốc.|pharmacist|chemist shop
+chemistry|/ˈkemɪstri/|n|hóa học|W|Study chemistry.|Học hóa học.|science|good chemistry
+chest|/tʃest/|n|ngực|H|Chest pain.|Đau ngực.|breast|treasure chest
+chief|/tʃiːf/|adj|chủ yếu|W|Chief executive.|CEO.|main|chief reason
+childhood|/ˈtʃaɪldhʊd/|n|tuổi thơ|L|Happy childhood.|Tuổi thơ vui.|youth|childhood memories
+chip|/tʃɪp/|n|con chip|W|Computer chip.|Chip máy tính.|piece|fish and chips
+choice|/tʃɔɪs/|n|lựa chọn|G|Make a choice.|Đưa ra lựa chọn.|option|wide choice
+choose|/tʃuːz/|v|chọn|G|Choose carefully.|Chọn cẩn thận.|select|hard to choose
+chop|/tʃɒp/|v|chặt|L|Chop vegetables.|Thái rau.|cut|chop down
+circumstance|/ˈsɜːkəmstəns/|n|hoàn cảnh|G|Under circumstances.|Trong hoàn cảnh.|situation|unforeseen circumstances
+cite|/saɪt/|v|trích dẫn|W|Cite sources.|Trích nguồn.|quote|frequently cited
+citizen|/ˈsɪtɪzn/|n|công dân|G|Senior citizen.|Người cao tuổi.|resident|global citizen
+civil|/ˈsɪvl/|adj|dân sự|W|Civil rights.|Dân quyền.|civic|civil war
+claim|/kleɪm/|v|tuyên bố|G|Claim responsibility.|Nhận trách nhiệm.|assert|false claim
+classic|/ˈklæsɪk/|adj|kinh điển|E|Classic novel.|Tiểu thuyết kinh điển.|timeless|classic example
+classical|/ˈklæsɪkl/|adj|cổ điển|E|Classical music.|Nhạc cổ điển.|traditional|classical guitar
+clear|/klɪə(r)/|adj|rõ ràng|G|Make it clear.|Làm rõ.|obvious|crystal clear
+clearly|/ˈklɪəli/|adv|rõ ràng|G|State clearly.|Nói rõ.|plainly|clearly visible
+clerk|/klɑːk/|n|thư ký|W|Bank clerk.|Nhân viên ngân hàng.|assistant|office clerk
+clever|/ˈklevə(r)/|adj|thông minh|F|Clever idea.|Ý tưởng hay.|smart|clever trick
+click|/klɪk/|v|nhấp chuột|W|Click link.|Nhấp link.|tap|click a mouse
+client|/ˈklaɪənt/|n|khách hàng|W|Important client.|Khách quan trọng.|customer|corporate client
+climate|/ˈklaɪmət/|n|khí hậu|N|Climate change.|Biến đổi khí hậu.|weather|harsh climate
+climb|/klaɪm/|v|leo|E|Climb mountain.|Leo núi.|ascend|steep climb
+clinic|/ˈklɪnɪk/|n|phòng khám|H|Dental clinic.|Nha khoa.|health center|private clinic
+close|/kləʊz/|adv|gần|G|Stay close.|Ở gần.|near|close together
+closely|/ˈkləʊsli/|adv|chặt chẽ|G|Look closely.|Nhìn kỹ.|tightly|closely related
+club|/klʌb/|n|câu lạc bộ|E|Join a club.|Vào CLB.|society|football club
+clue|/kluː/|n|manh mối|W|Give a clue.|Cho manh mối.|hint|vital clue
+coach|/kəʊtʃ/|n|HLV, xe khách|E|Football coach.|HLV bóng đá.|trainer|head coach
+coal|/kəʊl/|n|than đá|N|Coal mine.|Mỏ than.|fuel|burn coal
+coast|/kəʊst/|n|bờ biển|T|Along the coast.|Dọc bờ biển.|shore|east coast
+coat|/kəʊt/|n|áo khoác|L|Winter coat.|Áo mùa đông.|jacket|coat of paint
+code|/kəʊd/|n|mã|W|Dress code.|Quy định ăn mặc.|cipher|bar code
+collapse|/kəˈlæps/|v|sụp đổ|G|Building collapsed.|Tòa nhà sập.|fall|collapse completely
+colleague|/ˈkɒliːɡ/|n|đồng nghiệp|W|Work colleague.|Đồng nghiệp.|co-worker|close colleague
+collect|/kəˈlekt/|v|thu thập|W|Collect data.|Thu thập dữ liệu.|gather|collect money
+collection|/kəˈlekʃn/|n|bộ sưu tập|E|Art collection.|Bộ sưu tập nghệ thuật.|group|stamp collection
+collective|/kəˈlektɪv/|adj|tập thể|W|Collective effort.|Nỗ lực tập thể.|shared|collective memory
+college|/ˈkɒlɪdʒ/|n|cao đẳng|W|Go to college.|Đi học.|university|college student
+column|/ˈkɒləm/|n|cột|W|Newspaper column.|Cột báo.|pillar|gossip column
+combination|/ˌkɒmbɪˈneɪʃn/|n|kết hợp|G|Winning combination.|Kết hợp hoàn hảo.|mixture|unique combination
+combine|/kəmˈbaɪn/|v|kết hợp|G|Combine forces.|Hợp lực.|mix|combine ingredients
+comfort|/ˈkʌmfət/|n|thoải mái|F|In comfort.|Trong sự thoải mái.|ease|comfort food
+comfortable|/ˈkʌmfərtəbl/|adj|thoải mái|F|Comfortable chair.|Ghế êm.|cozy|feel comfortable
+command|/kəˈmɑːnd/|n|mệnh lệnh|W|Under command.|Dưới lệnh.|order|take command
+comment|/ˈkɒment/|n|bình luận|G|No comment.|Miễn bình luận.|remark|leave a comment
+commercial|/kəˈmɜːʃl/|adj|thương mại|W|Commercial success.|Thành công thương mại.|business|commercial break
+commission|/kəˈmɪʃn/|n|ủy ban|W|Election commission.|Ủy ban bầu cử.|committee|high commission
+commit|/kəˈmɪt/|v|cam kết|W|Commit crime.|Phạm tội.|dedicate|commit suicide
+commitment|/kəˈmɪtmənt/|n|sự cam kết|W|Lifelong commitment.|Cam kết trọn đời.|promise|make a commitment
+committee|/kəˈmɪti/|n|ủy ban|W|Committee member.|Thành viên ủy ban.|board|committee meeting
+common|/ˈkɒmən/|adj|phổ biến|G|Common sense.|Lẽ thường.|usual|common goal
+commonly|/ˈkɒmənli/|adv|thông thường|G|Commonly known.|Thường được biết.|usually|commonly used
+communicate|/kəˈmjuːnɪkeɪt/|v|giao tiếp|W|Communicate effectively.|Giao tiếp tốt.|convey|communicate with
+communication|/kəˌmjuːnɪˈkeɪʃn/|n|giao tiếp|W|Communication skills.|Kỹ năng giao tiếp.|interaction|poor communication
+community|/kəˈmjuːnəti/|n|cộng đồng|G|Local community.|Cộng đồng địa phương.|society|community service
+company|/ˈkʌmpəni/|n|công ty|W|Software company.|Công ty phần mềm.|business|good company
+compare|/kəmˈpeə(r)/|v|so sánh|G|Compare prices.|So sánh giá.|contrast|compare notes
+comparison|/kəmˈpærɪsn/|n|sự so sánh|G|In comparison with.|So với.|contrast|draw a comparison
+compete|/kəmˈpiːt/|v|cạnh tranh|W|Compete for prize.|Tranh giải.|contend|compete against
+competition|/ˌkɒmpəˈtɪʃn/|n|cuộc thi|W|Fierce competition.|Cạnh tranh khốc liệt.|contest|win a competition
+competitive|/kəmˈpetətɪv/|adj|cạnh tranh|W|Competitive market.|Thị trường cạnh tranh.|aggressive|competitive edge
+competitor|/kəmˈpetɪtə(r)/|n|đối thủ|W|Main competitor.|Đối thủ chính.|rival|fierce competitor
+complain|/kəmˈpleɪn/|v|phàn nàn|F|Complain bitterly.|Phàn nàn cay đắng.|grumble|complain about
+complaint|/kəmˈpleɪnt/|n|lời phàn nàn|F|Make a complaint.|Phàn nàn.|grievance|customer complaint
+complete|/kəmˈpliːt/|adj|hoàn thành|G|Complete silence.|Yên lặng hoàn toàn.|finish|complete stranger
+completely|/kəmˈpliːtli/|adv|hoàn toàn|G|Completely different.|Hoàn toàn khác.|totally|completely forget
+complex|/ˈkɒmpleks/|adj|phức tạp|G|Complex issue.|Vấn đề phức tạp.|complicated|complex process
+complicate|/ˈkɒmplɪkeɪt/|v|làm phức tạp|G|Complicate matters.|Làm phức tạp vấn đề.|confuse|unnecessarily complicate
+complicated|/ˈkɒmplɪkeɪtɪd/|adj|phức tạp|G|Complicated relationship.|Mối quan hệ phức tạp.|difficult|highly complicated
+component|/kəmˈpəʊnənt/|n|thành phần|W|Key component.|Thành phần chính.|part|essential component
+compose|/kəmˈpəʊz/|v|sáng tác|W|Compose music.|Sáng tác nhạc.|create|be composed of
+composition|/ˌkɒmpəˈzɪʃn/|n|thành phần|W|Chemical composition.|Thành phần hóa học.|makeup|musical composition
+compound|/ˈkɒmpaʊnd/|n|hợp chất|W|Chemical compound.|Hợp chất hóa học.|mixture|organic compound
+comprehensive|/ˌkɒmprɪˈhensɪv/|adj|toàn diện|W|Comprehensive guide.|Hướng dẫn toàn diện.|thorough|comprehensive review
+comprise|/kəmˈpraɪz/|v|bao gồm|W|Comprise two parts.|Gồm 2 phần.|consist of|be comprised of
+compromise|/ˈkɒmprəmaɪz/|n|thỏa hiệp|W|Reach compromise.|Đạt thỏa hiệp.|agreement|make a compromise
+compute|/kəmˈpjuːt/|v|tính toán|W|Compute cost.|Tính chi phí.|calculate|compute accurately
+conceal|/kənˈsiːl/|v|che giấu|G|Conceal truth.|Giấu sự thật.|hide|carefully conceal
+concentrate|/ˈkɒnsntreɪt/|v|tập trung|W|Concentrate hard.|Tập trung cao độ.|focus|concentrate on
+concentration|/ˌkɒnsnˈtreɪʃn/|n|sự tập trung|W|Lack concentration.|Thiếu tập trung.|focus|high concentration
+concept|/ˈkɒnsept/|n|khái niệm|W|Basic concept.|Khái niệm cơ bản.|idea|abstract concept
+concern|/kənˈsɜːn/|n|mối quan tâm|F|Express concern.|Bày tỏ quan tâm.|worry|cause for concern
+concerned|/kənˈsɜːnd/|adj|lo lắng|F|Deeply concerned.|Rất lo lắng.|worried|concerned about
+conclude|/kənˈkluːd/|v|kết luận|W|Conclude meeting.|Kết thúc họp.|finish|safely conclude
+conclusion|/kənˈkluːʒn/|n|kết luận|W|Draw conclusion.|Rút ra kết luận.|result|logical conclusion
+concrete|/ˈkɒŋkriːt/|adj|cụ thể|G|Concrete evidence.|Bằng chứng cụ thể.|solid|concrete floor
+condition|/kənˈdɪʃn/|n|điều kiện|G|Poor condition.|Tình trạng kém.|state|medical condition
+conduct|/kənˈdʌkt/|v|tiến hành|W|Conduct survey.|Tiến hành khảo sát.|direct|conduct experiment
+conference|/ˈkɒnfərəns/|n|hội nghị|W|Press conference.|Họp báo.|meeting|annual conference
+confidence|/ˈkɒnfɪdəns/|n|tự tin|F|Lack confidence.|Thiếu tự tin.|trust|boost confidence
+confident|/ˈkɒnfɪdənt/|adj|tự tin|F|Feel confident.|Cảm thấy tự tin.|self-assured|confident smile
+confirm|/kənˈfɜːm/|v|xác nhận|W|Confirm booking.|Xác nhận đặt chỗ.|verify|officially confirm
+conflict|/ˈkɒnflɪkt/|n|xung đột|G|Armed conflict.|Xung đột vũ trang.|dispute|resolve a conflict
+confront|/kənˈfrʌnt/|v|đối mặt|G|Confront problem.|Đối mặt vấn đề.|face|directly confront
+confusion|/kənˈfjuːʒn/|n|nhầm lẫn|F|Cause confusion.|Gây nhầm lẫn.|muddle|total confusion
+congress|/ˈkɒŋɡres/|n|quốc hội|W|Act of Congress.|Đạo luật QH.|parliament|attend a congress
+connect|/kəˈnekt/|v|kết nối|W|Connect internet.|Kết nối mạng.|link|connect with
+connection|/kəˈnekʃn/|n|sự kết nối|W|Strong connection.|Kết nối mạnh.|link|internet connection
+consequence|/ˈkɒnsɪkwəns/|n|hậu quả|G|Serious consequence.|Hậu quả nghiêm trọng.|result|as a consequence
+conservative|/kənˈsɜːvətɪv/|adj|bảo thủ|W|Conservative views.|Quan điểm bảo thủ.|traditional|conservative estimate
+consider|/kənˈsɪdə(r)/|v|xem xét|G|Consider carefully.|Xem xét cẩn thận.|think about|seriously consider
+considerable|/kənˈsɪdərəbl/|adj|đáng kể|G|Considerable amount.|Lượng đáng kể.|significant|considerable effort
+consideration|/kənˌsɪdəˈreɪʃn/|n|sự xem xét|G|Take into consideration.|Đưa vào xem xét.|thought|careful consideration
+consist|/kənˈsɪst/|v|bao gồm|G|Consist of water.|Bao gồm nước.|comprise|consist entirely of
+consistent|/kənˈsɪstənt/|adj|nhất quán|W|Consistent quality.|Chất lượng ổn định.|steady|highly consistent
+constant|/ˈkɒnstənt/|adj|liên tục|G|Constant noise.|Ồn ào liên tục.|continuous|constant threat
+constantly|/ˈkɒnstəntli/|adv|luôn luôn|G|Constantly changing.|Luôn thay đổi.|continually|update constantly
+constitute|/ˈkɒnstɪtjuːt/|v|cấu thành|W|Constitute a threat.|Tạo thành mối đe dọa.|make up|legally constitute
+construct|/kənˈstrʌkt/|v|xây dựng|W|Construct a building.|Xây tòa nhà.|build|poorly constructed
+construction|/kənˈstrʌkʃn/|n|sự xây dựng|W|Under construction.|Đang xây dựng.|building|construction site
+consult|/kənˈsʌlt/|v|tham khảo|W|Consult a doctor.|Hỏi bác sĩ.|ask|consult a lawyer
+consume|/kənˈsjuːm/|v|tiêu thụ|L|Consume alcohol.|Tiêu thụ cồn.|eat|consume energy
+consumer|/kənˈsjuːmə(r)/|n|người tiêu dùng|W|Consumer rights.|Quyền người tiêu dùng.|buyer|consumer goods
+consumption|/kənˈsʌmpʃn/|n|sự tiêu thụ|W|Energy consumption.|Tiêu thụ năng lượng.|usage|reduce consumption
+contact|/ˈkɒntækt/|n|liên lạc|W|Keep in contact.|Giữ liên lạc.|touch|eye contact
+contain|/kənˈteɪn/|v|chứa đựng|G|Contain sugar.|Chứa đường.|hold|contain information
+container|/kənˈteɪnə(r)/|n|hộp chứa|L|Plastic container.|Hộp nhựa.|receptacle|shipping container
+contemporary|/kənˈtemprəri/|adj|đương đại|E|Contemporary art.|Nghệ thuật đương đại.|modern|contemporary society
+content|/ˈkɒntent/|n|nội dung|W|Web content.|Nội dung web.|substance|table of contents
+contest|/ˈkɒntest/|n|cuộc thi|E|Beauty contest.|Thi sắc đẹp.|competition|win a contest
+context|/ˈkɒntekst/|n|ngữ cảnh|W|Out of context.|Ngoài ngữ cảnh.|situation|historical context
+continent|/ˈkɒntɪnənt/|n|lục địa|G|European continent.|Lục địa châu Âu.|landmass|across the continent
+continue|/kənˈtɪnjuː/|v|tiếp tục|G|Continue working.|Tiếp tục làm việc.|carry on|continue to grow
+continuous|/kənˈtɪnjuəs/|adj|liên tục|G|Continuous improvement.|Cải tiến liên tục.|unbroken|continuous process
+contract|/ˈkɒntrækt/|n|hợp đồng|W|Sign contract.|Ký hợp đồng.|agreement|breach of contract
+contrast|/ˈkɒntrɑːst/|n|sự tương phản|G|In contrast to.|Tương phản với.|difference|stark contrast
+contribute|/kənˈtrɪbjuːt/|v|đóng góp|W|Contribute money.|Góp tiền.|donate|contribute to
+contribution|/ˌkɒntrɪˈbjuːʃn/|n|sự đóng góp|W|Make contribution.|Đóng góp.|donation|valuable contribution
+control|/kənˈtrəʊl/|v|kiểm soát|G|Out of control.|Mất kiểm soát.|manage|take control
+controversial|/ˌkɒntrəˈvɜːʃl/|adj|gây tranh cãi|W|Controversial issue.|Vấn đề tranh cãi.|disputed|highly controversial
+controversy|/ˈkɒntrəvɜːsi/|n|tranh cãi|W|Cause controversy.|Gây tranh cãi.|dispute|public controversy
+convenience|/kənˈviːniəns/|n|sự tiện lợi|L|For convenience.|Cho tiện lợi.|ease|modern convenience
+convention|/kənˈvenʃn/|n|hội nghị|W|Annual convention.|Hội nghị thường niên.|meeting|defy convention
+conventional|/kənˈvenʃənl/|adj|truyền thống|W|Conventional wisdom.|Trí tuệ thông thường.|traditional|conventional method
+conversation|/ˌkɒnvəˈseɪʃn/|n|trò chuyện|G|Deep conversation.|Trò chuyện sâu sắc.|chat|phone conversation
+convert|/kənˈvɜːt/|v|chuyển đổi|W|Convert into cash.|Đổi ra tiền mặt.|change|convert easily
+convince|/kənˈvɪns/|v|thuyết phục|G|Convince jury.|Thuyết phục bồi thẩm đoàn.|persuade|fully convinced
+cope|/kəʊp/|v|đối phó|F|Cope with stress.|Đối phó căng thẳng.|manage|cope well
+core|/kɔː(r)/|n|cốt lõi|G|Core values.|Giá trị cốt lõi.|center|at its core
+corporate|/ˈkɔːpərət/|adj|công ty|W|Corporate culture.|Văn hóa công ty.|business|corporate world
+corporation|/ˌkɔːpəˈreɪʃn/|n|tập đoàn|W|Large corporation.|Tập đoàn lớn.|company|multinational corporation
+correct|/kəˈrekt/|adj|chính xác|G|Correct answer.|Câu trả lời đúng.|right|absolutely correct
+correctly|/kəˈrektli/|adv|chính xác|G|Answer correctly.|Trả lời đúng.|accurately|guess correctly
+correspondent|/ˌkɒrəˈspɒndənt/|n|phóng viên|W|Foreign correspondent.|Phóng viên ngoại trú.|reporter|war correspondent
+council|/ˈkaʊnsl/|n|hội đồng|W|City council.|Hội đồng thành phố.|committee|local council
+counsel|/ˈkaʊnsl/|n|lời khuyên|W|Legal counsel.|Luật sư.|advice|seek counsel
+counter|/ˈkaʊntə(r)/|n|quầy|L|Over the counter.|Mua tại quầy.|desk|checkout counter
+county|/ˈkaʊnti/|n|hạt, tỉnh|G|County council.|Hội đồng hạt.|district|county court
+courage|/ˈkʌrɪdʒ/|n|dũng cảm|F|Take courage.|Can đảm lên.|bravery|great courage
+court|/kɔːt/|n|tòa án|W|Supreme court.|Tòa án tối cao.|tribunal|go to court
+cover|/ˈkʌvə(r)/|v|bao phủ|G|Cover the cost.|Bao chi phí.|hide|cover entirely
+coverage|/ˈkʌvərɪdʒ/|n|đưa tin|W|Media coverage.|Báo chí đưa tin.|reporting|live coverage
+crack|/kræk/|n|vết nứt|G|Crack in wall.|Nứt tường.|split|deep crack
+craft|/krɑːft/|n|thủ công|E|Arts and crafts.|Thủ công mỹ nghệ.|skill|traditional craft
+crash|/kræʃ/|v|đâm sầm|T|Car crash.|Đâm xe.|smash|plane crash
+create|/kriˈeɪt/|v|tạo ra|W|Create website.|Tạo trang web.|make|newly created
+creation|/kriˈeɪʃn/|n|sự tạo ra|W|Job creation.|Tạo việc làm.|making|latest creation
+creative|/kriˈeɪtɪv/|adj|sáng tạo|F|Creative thinking.|Tư duy sáng tạo.|inventive|highly creative
+creature|/ˈkriːtʃə(r)/|n|sinh vật|N|Living creature.|Sinh vật sống.|animal|sea creature
+credit|/ˈkredɪt/|n|tín dụng|W|Credit card.|Thẻ tín dụng.|loan|take credit
+crew|/kruː/|n|đội nhóm|W|Cabin crew.|Phi hành đoàn.|team|rescue crew
+crime|/kraɪm/|n|tội phạm|G|Commit crime.|Phạm tội.|offense|serious crime
+criminal|/ˈkrɪmɪnl/|adj|thuộc tội phạm|G|Criminal record.|Tiền án.|illegal|criminal act
+crisis|/ˈkraɪsɪs/|n|khủng hoảng|G|Economic crisis.|Khủng hoảng kinh tế.|emergency|financial crisis
+criteria|/kraɪˈtɪəriə/|n|tiêu chí|W|Meet criteria.|Đáp ứng tiêu chí.|standards|strict criteria
+critic|/ˈkrɪtɪk/|n|nhà phê bình|W|Art critic.|Nhà phê bình nghệ thuật.|reviewer|film critic
+critical|/ˈkrɪtɪkl/|adj|nghiêm trọng|W|Critical condition.|Tình trạng nguy kịch.|crucial|highly critical
+criticism|/ˈkrɪtɪsɪzəm/|n|chỉ trích|W|Constructive criticism.|Góp ý xây dựng.|attack|harsh criticism
+criticize|/ˈkrɪtɪsaɪz/|v|chỉ trích|W|Heavily criticize.|Chỉ trích nặng.|condemn|harshly criticize
+crop|/krɒp/|n|mùa màng|N|Harvest crop.|Thu hoạch.|harvest|cash crop
+cross|/krɒs/|v|băng qua|T|Cross street.|Qua đường.|traverse|cross a line
+crowd|/kraʊd/|n|đám đông|G|Huge crowd.|Đám đông lớn.|mob|attract a crowd
+crucial|/ˈkruːʃl/|adj|cốt yếu|W|Crucial role.|Vai trò cốt yếu.|vital|absolutely crucial
+cry|/kraɪ/|v|khóc|F|Cry for help.|Khóc cầu cứu.|weep|cry bitterly
+cultural|/ˈkʌltʃərəl/|adj|thuộc văn hóa|G|Cultural heritage.|Di sản văn hóa.|societal|cultural diversity
+culture|/ˈkʌltʃə(r)/|n|văn hóa|G|Pop culture.|Văn hóa đại chúng.|society|youth culture
+curious|/ˈkjʊəriəs/|adj|tò mò|F|Curious about it.|Tò mò về nó.|inquisitive|naturally curious
+current|/ˈkʌrənt/|adj|hiện tại|G|Current situation.|Tình hình hiện tại.|present|current events
+currently|/ˈkʌrəntli/|adv|hiện tại|G|Currently working.|Đang làm việc.|now|currently available
+curriculum|/kəˈrɪkjələm/|n|chương trình học|W|School curriculum.|Chương trình nhà trường.|syllabus|national curriculum
+custom|/ˈkʌstəm/|n|phong tục|G|Local custom.|Phong tục địa phương.|tradition|old custom
+customer|/ˈkʌstəmə(r)/|n|khách hàng|W|Customer service.|Dịch vụ khách hàng.|client|loyal customer
+cut|/kʌt/|v|cắt, giảm|G|Cut costs.|Giảm chi phí.|reduce|cut back
+cycle|/ˈsaɪkl/|n|chu kỳ|N|Life cycle.|Vòng đời.|circle|vicious cycle
+dad|/dæd/|n|bố|L|My dad.|Bố tôi.|father|stay-at-home dad
+daily|/ˈdeɪli/|adj|hàng ngày|G|Daily routine.|Thói quen hàng ngày.|everyday|daily basis
+damage|/ˈdæmɪdʒ/|n|thiệt hại|G|Cause damage.|Gây thiệt hại.|harm|severe damage
+dance|/dɑːns/|v|nhảy múa|E|Dance beautifully.|Nhảy múa đẹp.|move|dance the night away
+danger|/ˈdeɪndʒə(r)/|n|mối nguy|G|In danger.|Gặp nguy.|risk|hidden danger
+dangerous|/ˈdeɪndʒərəs/|adj|nguy hiểm|G|Highly dangerous.|Rất nguy hiểm.|unsafe|dangerous driving
+dark|/dɑːk/|adj|tối|G|Dark room.|Phòng tối.|black|in the dark
+data|/ˈdeɪtə/|n|dữ liệu|W|Collect data.|Thu thập dữ liệu.|information|data processing
+date|/deɪt/|n|ngày tháng|G|Date of birth.|Ngày sinh.|day|set a date
+daughter|/ˈdɔːtə(r)/|n|con gái|L|My eldest daughter.|Con gái lớn của tôi.|girl|youngest daughter
+day|/deɪ/|n|ngày|G|Every day.|Mỗi ngày.|24 hours|day off
+dead|/ded/|adj|đã chết|H|Pronounced dead.|Bị tuyên bố là đã chết.|deceased|dead or alive
+deal|/diːl/|n|thỏa thuận|W|Make a deal.|Thỏa thuận.|agreement|great deal
+dear|/dɪə(r)/|adj|thân mến|F|Dear friend.|Bạn thân mến.|beloved|dear sir
+death|/deθ/|n|cái chết|H|Cause of death.|Nguyên nhân cái chết.|demise|life and death
+debate|/dɪˈbeɪt/|n|tranh luận|W|Heated debate.|Tranh luận sôi nổi.|discussion|public debate
+debt|/det/|n|món nợ|W|In debt.|Đang nợ nần.|liability|pay off debt
+decade|/ˈdekeɪd/|n|thập kỷ|G|A decade ago.|Một thập kỷ trước.|ten years|past decade
+december|/dɪˈsembə(r)/|n|tháng 12|G|In December.|Vào tháng 12.|last month|late December
+decide|/dɪˈsaɪd/|v|quyết định|G|Decide quickly.|Quyết định nhanh.|determine|decide to go
+decision|/dɪˈsɪʒn/|n|quyết định|G|Make decision.|Đưa ra quyết định.|choice|final decision
+declare|/dɪˈkleə(r)/|v|tuyên bố|G|Declare war.|Tuyên chiến.|announce|declare independence
+decline|/dɪˈklaɪn/|v|suy giảm|W|Decline in sales.|Giảm doanh số.|decrease|sharp decline
+deep|/diːp/|adj|sâu|N|Deep ocean.|Đại dương sâu.|profound|deep breath
+deeply|/ˈdiːpli/|adv|sâu sắc|F|Deeply care.|Quan tâm sâu sắc.|profoundly|deeply regret
+defeat|/dɪˈfiːt/|v|đánh bại|G|Defeat enemy.|Đánh bại kẻ thù.|beat|suffer defeat
+defend|/dɪˈfend/|v|bảo vệ|G|Defend rights.|Bảo vệ quyền lợi.|protect|defend a title
+defense|/dɪˈfens/|n|sự phòng thủ|G|Self defense.|Tự vệ.|protection|national defense
+define|/dɪˈfaɪn/|v|định nghĩa|W|Define term.|Định nghĩa từ.|describe|clearly define
+definite|/ˈdefɪnət/|adj|rõ ràng|G|Definite answer.|Câu trả lời rõ.|certain|definite proof
+definitely|/ˈdefɪnətli/|adv|chắc chắn|G|Definitely yes.|Chắc chắn rồi.|certainly|definitely not
+definition|/ˌdefɪˈnɪʃn/|n|định nghĩa|W|Clear definition.|Định nghĩa rõ.|meaning|exact definition
+degree|/dɪˈɡriː/|n|bằng cấp, mức độ|W|College degree.|Bằng đại học.|level|high degree
+delay|/dɪˈleɪ/|v|trì hoãn|T|Flight delayed.|Chuyến bay hoãn.|postpone|without delay
+deliberately|/dɪˈlɪbərətli/|adv|cố ý|G|Deliberately ignore.|Cố ý lờ đi.|intentionally|deliberately misleading
+deliver|/dɪˈlɪvə(r)/|v|giao hàng|W|Deliver package.|Giao gói hàng.|bring|deliver a speech
+delivery|/dɪˈlɪvəri/|n|sự giao hàng|W|Free delivery.|Giao hàng miễn phí.|shipping|delivery time
+demand|/dɪˈmɑːnd/|n|nhu cầu|W|High demand.|Nhu cầu cao.|request|supply and demand
+demonstrate|/ˈdemənstreɪt/|v|chứng minh|W|Demonstrate skill.|Chứng tỏ kỹ năng.|show|clearly demonstrate
+deny|/dɪˈnaɪ/|v|phủ nhận|G|Deny allegations.|Phủ nhận cáo buộc.|reject|strongly deny
+department|/dɪˈpɑːtmənt/|n|bộ phận|W|Sales department.|Phòng sales.|division|department store
+depend|/dɪˈpend/|v|phụ thuộc|G|Depend on you.|Phụ thuộc vào bạn.|rely|it depends
+depressed|/dɪˈprest/|adj|trầm cảm|F|Feel depressed.|Thấy trầm cảm.|sad|deeply depressed
+depth|/depθ/|n|độ sâu|G|In depth.|Chuyên sâu.|deepness|hidden depths
+derive|/dɪˈraɪv/|v|bắt nguồn|W|Derive from.|Bắt nguồn từ.|originate|derive benefit
+describe|/dɪˈskraɪb/|v|miêu tả|G|Describe it.|Miêu tả nó.|explain|accurately describe
+description|/dɪˈskrɪpʃn/|n|sự miêu tả|G|Detailed description.|Miêu tả chi tiết.|account|vivid description
+desert|/ˈdezət/|n|sa mạc|N|Sahara desert.|Sa mạc Sahara.|wasteland|desert island
+deserve|/dɪˈzɜːv/|v|xứng đáng|G|Deserve a reward.|Xứng đáng có thưởng.|merit|fully deserve
+design|/dɪˈzaɪn/|n|thiết kế|W|Interior design.|Thiết kế nội thất.|plan|web design
+designer|/dɪˈzaɪnə(r)/|n|nhà thiết kế|W|Fashion designer.|Nhà thiết kế thời trang.|creator|lead designer
+desire|/dɪˈzaɪə(r)/|n|khao khát|F|Strong desire.|Khao khát mãnh liệt.|wish|burning desire
+desk|/desk/|n|bàn làm việc|W|Office desk.|Bàn văn phòng.|table|front desk
+desperate|/ˈdespərət/|adj|tuyệt vọng|F|Desperate situation.|Tình huống tuyệt vọng.|hopeless|desperate attempt
+despite|/dɪˈspaɪt/|prep|mặc dù|G|Despite rain.|Dù trời mưa.|in spite of|despite the fact
+destroy|/dɪˈstrɔɪ/|v|phá hủy|G|Destroy evidence.|Hủy bằng chứng.|ruin|completely destroy
+detail|/ˈdiːteɪl/|n|chi tiết|G|In detail.|Rất chi tiết.|specific|attention to detail
+detailed|/ˈdiːteɪld/|adj|chi tiết|G|Detailed report.|Báo cáo chi tiết.|thorough|highly detailed
+detect|/dɪˈtekt/|v|phát hiện|W|Detect error.|Phát hiện lỗi.|discover|easily detect
+determine|/dɪˈtɜːmɪn/|v|xác định|G|Determine cause.|Xác định nguyên nhân.|decide|determine exactly
+determined|/dɪˈtɜːmɪnd/|adj|quyết tâm|F|Determined to win.|Quyết tâm thắng.|resolute|highly determined
+develop|/dɪˈveləp/|v|phát triển|W|Develop skills.|Phát triển kỹ năng.|grow|develop rapidly
+development|/dɪˈveləpmənt/|n|sự phát triển|W|Economic development.|Phát triển kinh tế.|growth|child development
+device|/dɪˈvaɪs/|n|thiết bị|W|Mobile device.|Thiết bị di động.|gadget|electronic device
+devote|/dɪˈvəʊt/|v|cống hiến|W|Devote time.|Cống hiến thời gian.|dedicate|devote entirely
+die|/daɪ/|v|chết|H|Die young.|Chết trẻ.|pass away|die of
+diet|/ˈdaɪət/|n|chế độ ăn|H|Healthy diet.|Ăn uống lành mạnh.|nutrition|balanced diet
+difference|/ˈdɪfrəns/|n|sự khác biệt|G|Make a difference.|Tạo sự khác biệt.|contrast|huge difference
+different|/ˈdɪfrənt/|adj|khác nhau|G|Different colors.|Màu khác nhau.|various|completely different
+differently|/ˈdɪfrəntli/|adv|một cách khác biệt|G|Think differently.|Nghĩ khác.|uniquely|act differently
+difficult|/ˈdɪfɪkəlt/|adj|khó khăn|G|Difficult task.|Nhiệm vụ khó.|hard|extremely difficult
+difficulty|/ˈdɪfɪkəlti/|n|sự khó khăn|G|Great difficulty.|Khó khăn lớn.|trouble|overcome difficulty
+dig|/dɪɡ/|v|đào|N|Dig a hole.|Đào hố.|excavate|dig deep
+digital|/ˈdɪdʒɪtl/|adj|kỹ thuật số|W|Digital camera.|Máy ảnh số.|electronic|digital age
+dinner|/ˈdɪnə(r)/|n|bữa tối|L|Have dinner.|Ăn tối.|evening meal|cook dinner
+direct|/dəˈrekt/|adj|trực tiếp|G|Direct flight.|Chuyến bay thẳng.|straight|direct contact
+direction|/dəˈrekʃn/|n|phương hướng|G|Right direction.|Đúng hướng.|way|sense of direction
+directly|/dəˈrektli/|adv|trực tiếp|G|Speak directly.|Nói trực tiếp.|straight|directly involved
+director|/dəˈrektə(r)/|n|giám đốc|W|Managing director.|Giám đốc điều hành.|manager|board of directors
+dirt|/dɜːt/|n|bụi bẩn|N|Covered in dirt.|Dính đầy bụi.|soil|dirt track
+dirty|/ˈdɜːti/|adj|bẩn thỉu|G|Dirty hands.|Tay bẩn.|unclean|dirty trick
+disadvantage|/ˌdɪsədˈvɑːntɪdʒ/|n|bất lợi|G|Major disadvantage.|Bất lợi lớn.|drawback|at a disadvantage
+disagree|/ˌdɪsəˈɡriː/|v|không đồng ý|G|Strongly disagree.|Phản đối kịch liệt.|differ|agree to disagree
+disappear|/ˌdɪsəˈpɪə(r)/|v|biến mất|G|Disappear completely.|Biến mất hoàn toàn.|vanish|suddenly disappear
+disappoint|/ˌdɪsəˈpɔɪnt/|v|làm thất vọng|F|Never disappoint.|Không làm thất vọng.|let down|deeply disappoint
+disappointed|/ˌdɪsəˈpɔɪntɪd/|adj|thất vọng|F|Disappointed with.|Thất vọng với.|upset|feel disappointed
+disappointing|/ˌdɪsəˈpɔɪntɪŋ/|adj|đáng thất vọng|F|Disappointing result.|Kết quả đáng thất vọng.|poor|highly disappointing
+disappointment|/ˌdɪsəˈpɔɪntmənt/|n|sự thất vọng|F|Hide disappointment.|Giấu sự thất vọng.|regret|bitter disappointment
+disaster|/dɪˈzɑːstə(r)/|n|thảm họa|N|Natural disaster.|Thảm họa thiên nhiên.|catastrophe|recipe for disaster
+discipline|/ˈdɪsəplɪn/|n|kỷ luật|W|Strict discipline.|Kỷ luật thép.|control|lack discipline
+discount|/ˈdɪskaʊnt/|n|giảm giá|L|20% discount.|Giảm 20%.|reduction|offer a discount
+discover|/dɪˈskʌvə(r)/|v|khám phá|G|Discover truth.|Tìm ra sự thật.|find|newly discovered
+discovery|/dɪˈskʌvəri/|n|sự khám phá|W|Scientific discovery.|Khám phá khoa học.|finding|major discovery
+discuss|/dɪˈskʌs/|v|thảo luận|W|Discuss issue.|Thảo luận vấn đề.|debate|openly discuss
+discussion|/dɪˈskʌʃn/|n|cuộc thảo luận|W|Heated discussion.|Thảo luận sôi nổi.|debate|under discussion
+disease|/dɪˈziːz/|n|bệnh tật|H|Heart disease.|Bệnh tim.|illness|fatal disease
+dish|/dɪʃ/|n|món ăn, cái đĩa|L|Wash dishes.|Rửa bát.|plate|favorite dish
+disk|/dɪsk/|n|đĩa|W|Hard disk.|Ổ cứng.|drive|save to disk
+dismiss|/dɪsˈmɪs/|v|sa thải|W|Dismiss employee.|Đuổi việc.|fire|unfairly dismissed
+display|/dɪˈspleɪ/|v|hiển thị|W|Display message.|Hiển thị tin nhắn.|show|on display
+dispute|/dɪˈspjuːt/|n|tranh chấp|W|Labor dispute.|Tranh chấp lao động.|conflict|resolve a dispute
+distance|/ˈdɪstəns/|n|khoảng cách|T|Long distance.|Khoảng cách xa.|gap|walking distance
+distant|/ˈdɪstənt/|adj|xa xôi|T|Distant memory.|Ký ức xa xôi.|remote|distant relative
+distinct|/dɪˈstɪŋkt/|adj|khác biệt|G|Distinct feature.|Nét khác biệt.|clear|quite distinct
+distinction|/dɪˈstɪŋkʃn/|n|sự khác biệt|G|Make distinction.|Tạo sự khác biệt.|difference|draw a distinction
+distinguish|/dɪˈstɪŋɡwɪʃ/|v|phân biệt|G|Distinguish between.|Phân biệt giữa.|differentiate|hard to distinguish
+distribute|/dɪˈstrɪbjuːt/|v|phân phát|W|Distribute leaflets.|Phát tờ rơi.|hand out|widely distributed
+distribution|/ˌdɪstrɪˈbjuːʃn/|n|sự phân phối|W|Income distribution.|Phân phối thu nhập.|sharing|mass distribution
+district|/ˈdɪstrɪkt/|n|quận, huyện|G|Financial district.|Khu tài chính.|area|business district
+divide|/dɪˈvaɪd/|v|chia|G|Divide into two.|Chia đôi.|split|evenly divide
+division|/dɪˈvɪʒn/|n|sự phân chia|W|Division of labor.|Phân công lao động.|split|deep division
+divorce|/dɪˈvɔːs/|n|ly hôn|L|Get divorce.|Ly hôn.|separation|bitter divorce
+divorced|/dɪˈvɔːst/|adj|đã ly hôn|L|Divorced couple.|Cặp đôi đã ly dị.|separated|recently divorced
+do|/duː/|v|làm|G|Do it now.|Làm ngay đi.|perform|do your best
+doctor|/ˈdɒktə(r)/|n|bác sĩ|H|See a doctor.|Khám bác sĩ.|physician|medical doctor
+document|/ˈdɒkjumənt/|n|tài liệu|W|Official document.|Tài liệu chính thức.|file|legal document
+dog|/dɒɡ/|n|con chó|L|Walk the dog.|Dắt chó đi dạo.|hound|guard dog
+dollar|/ˈdɒlə(r)/|n|đô la|W|One dollar.|Một đô la.|buck|million dollars
+domestic|/dəˈmestɪk/|adj|nội địa|G|Domestic flight.|Chuyến bay nội địa.|internal|domestic violence
+dominate|/ˈdɒmɪneɪt/|v|thống trị|W|Dominate market.|Thống trị thị trường.|control|completely dominate
+door|/dɔː(r)/|n|cánh cửa|L|Open door.|Mở cửa.|gate|front door
+double|/ˈdʌbl/|adj|gấp đôi|G|Double bed.|Giường đôi.|dual|double check
+doubt|/daʊt/|n|sự nghi ngờ|F|Without doubt.|Không nghi ngờ gì.|suspicion|no doubt
+down|/daʊn/|adv|xuống|G|Sit down.|Ngồi xuống.|below|upside down
+draft|/drɑːft/|n|bản nháp|W|First draft.|Bản nháp đầu.|outline|rough draft
+drag|/dræɡ/|v|kéo lê|G|Drag feet.|Kéo lê bước.|pull|drag out
+drama|/ˈdrɑːmə/|n|kịch tính|E|Costume drama.|Phim cổ trang.|play|high drama
+dramatic|/drəˈmætɪk/|adj|kịch tính|G|Dramatic change.|Thay đổi đột ngột.|sudden|dramatic increase
+draw|/drɔː/|v|vẽ, thu hút|G|Draw attention.|Thu hút sự chú ý.|sketch|draw a conclusion
+drawing|/ˈdrɔːɪŋ/|n|bức vẽ|E|Pencil drawing.|Bức vẽ chì.|sketch|line drawing
+dream|/driːm/|n|giấc mơ|F|Bad dream.|Giấc mơ xấu.|fantasy|sweet dreams
+dress|/dres/|v|mặc quần áo|L|Dress casually.|Ăn mặc giản dị.|clothe|dress up
+dressed|/drest/|adj|đã mặc đồ|L|Well dressed.|Ăn mặc đẹp.|clothed|get dressed
+drink|/drɪŋk/|v|uống|L|Drink water.|Uống nước.|swallow|drink heavily
+drive|/draɪv/|v|lái xe|T|Drive a car.|Lái ô tô.|steer|drive safely
+driver|/ˈdraɪvə(r)/|n|tài xế|T|Bus driver.|Tài xế xe buýt.|chauffeur|taxi driver
+drop|/drɒp/|v|đánh rơi, giảm|G|Drop price.|Giảm giá.|fall|drop out
+drug|/drʌɡ/|n|thuốc, ma túy|H|Prescription drug.|Thuốc kê đơn.|medicine|drug abuse
+drum|/drʌm/|n|cái trống|E|Play drum.|Đánh trống.|beat|beat a drum
+drunk|/drʌŋk/|adj|say rượu|L|Blind drunk.|Say bí tỉ.|intoxicated|drunk driving
+dry|/draɪ/|adj|khô|N|Dry weather.|Thời tiết khô.|arid|bone dry
+due|/djuː/|adj|đến hạn|G|Due date.|Ngày đến hạn.|expected|due to
+dull|/dʌl/|adj|nhàm chán|E|Dull movie.|Phim chán.|boring|dull pain
+dump|/dʌmp/|v|vứt bỏ|N|Dump rubbish.|Vứt rác.|throw away|dump toxic waste
+during|/ˈdjʊərɪŋ/|prep|trong suốt|G|During the night.|Trong đêm.|throughout|during the war
+dust|/dʌst/|n|bụi|N|Layer of dust.|Lớp bụi.|dirt|gather dust
+duty|/ˈdjuːti/|n|nhiệm vụ|W|Do your duty.|Làm nhiệm vụ.|responsibility|heavy duty
+eager|/ˈiːɡə(r)/|adj|háo hức|F|Eager to learn.|Háo hức học hỏi.|keen|eager anticipation
+ear|/ɪə(r)/|n|lỗ tai|H|My left ear.|Tai trái.|organ|ear infection
+early|/ˈɜːli/|adv|sớm|G|Wake up early.|Dậy sớm.|soon|early morning
+earn|/ɜːn/|v|kiếm được|W|Earn money.|Kiếm tiền.|make|earn a living
+earth|/ɜːθ/|n|trái đất|N|Planet Earth.|Trái đất.|globe|down to earth
+ease|/iːz/|n|sự thoải mái|F|With ease.|Dễ dàng.|comfort|at ease
+eastern|/ˈiːstən/|adj|phương đông|G|Eastern culture.|Văn hóa phương đông.|oriental|eastern coast
+economic|/ˌiːkəˈnɒmɪk/|adj|kinh tế|W|Economic growth.|Tăng trưởng kinh tế.|financial|economic crisis
+economy|/ɪˈkɒnəmi/|n|nền kinh tế|W|Strong economy.|Nền kinh tế mạnh.|wealth|global economy
+edge|/edʒ/|n|rìa, mép|G|Edge of cliff.|Mép vách đá.|border|cutting edge
+edition|/ɪˈdɪʃn/|n|phiên bản|W|First edition.|Ấn bản đầu tiên.|version|latest edition
+editor|/ˈedɪtə(r)/|n|biên tập viên|W|Chief editor.|Tổng biên tập.|reviewer|newspaper editor
+educate|/ˈedʒukeɪt/|v|giáo dục|W|Educate children.|Giáo dục trẻ em.|teach|highly educate
+educated|/ˈedʒukeɪtɪd/|adj|có giáo dục|W|Well educated.|Được giáo dục tốt.|learned|educated guess
+educational|/ˌedʒuˈkeɪʃənl/|adj|thuộc giáo dục|W|Educational system.|Hệ thống giáo dục.|instructive|educational background
+effective|/ɪˈfektɪv/|adj|hiệu quả|W|Effective method.|Phương pháp hiệu quả.|successful|highly effective
+effectively|/ɪˈfektɪvli/|adv|một cách hiệu quả|W|Work effectively.|Làm việc hiệu quả.|efficiently|communicate effectively
+effort|/ˈefət/|n|nỗ lực|W|Make an effort.|Nỗ lực.|attempt|team effort
+elect|/ɪˈlekt/|v|bầu cử|W|Elect a president.|Bầu tổng thống.|choose|newly elected
+election|/ɪˈlekʃn/|n|cuộc bầu cử|W|Win election.|Thắng bầu cử.|vote|general election
+element|/ˈelɪmənt/|n|yếu tố|G|Key element.|Yếu tố then chốt.|component|crucial element
+embarrass|/ɪmˈbærəs/|v|làm bối rối|F|Embarrass him.|Làm anh ta bối rối.|shame|embarrass easily
+embarrassed|/ɪmˈbærəst/|adj|bối rối|F|Feel embarrassed.|Thấy ngại.|ashamed|deeply embarrassed
+embarrassing|/ɪmˈbærəsɪŋ/|adj|đáng xấu hổ|F|Embarrassing moment.|Khoảnh khắc xấu hổ.|awkward|highly embarrassing
+emerge|/ɪˈmɜːdʒ/|v|nổi lên|G|Emerge from water.|Nổi lên từ nước.|appear|newly emerged
+emergency|/ɪˈmɜːdʒənsi/|n|khẩn cấp|H|Medical emergency.|Cấp cứu y tế.|crisis|emergency room
+emotion|/ɪˈməʊʃn/|n|cảm xúc|F|Hide emotion.|Giấu cảm xúc.|feeling|mixed emotions
+emotional|/ɪˈməʊʃənl/|adj|đa cảm|F|Emotional response.|Phản ứng đa cảm.|sensitive|highly emotional
+emotionally|/ɪˈməʊʃənəli/|adv|về mặt cảm xúc|F|Emotionally stable.|Ổn định cảm xúc.|mentally|emotionally drained
+emphasis|/ˈemfəsɪs/|n|sự nhấn mạnh|W|Put emphasis on.|Nhấn mạnh vào.|stress|place emphasis
+emphasize|/ˈemfəsaɪz/|v|nhấn mạnh|W|Emphasize point.|Nhấn mạnh luận điểm.|stress|strongly emphasize
+employ|/ɪmˈplɔɪ/|v|thuê, mướn|W|Employ staff.|Thuê nhân viên.|hire|employ directly
+employee|/ɪmˈplɔɪiː/|n|nhân viên|W|New employee.|Nhân viên mới.|worker|loyal employee
+employer|/ɪmˈplɔɪə(r)/|n|nhà tuyển dụng|W|Good employer.|Nhà tuyển dụng tốt.|boss|former employer
+employment|/ɪmˈplɔɪmənt/|n|việc làm|W|Full employment.|Việc làm toàn thời gian.|job|seek employment
+empty|/ˈempti/|adj|trống rỗng|G|Empty room.|Phòng trống.|blank|empty stomach
+enable|/ɪˈneɪbl/|v|cho phép|W|Enable to do.|Cho phép làm.|allow|fully enable
+encounter|/ɪnˈkaʊntə(r)/|v|chạm trán|G|Encounter problem.|Gặp vấn đề.|meet|brief encounter
+encourage|/ɪnˈkʌrɪdʒ/|v|khuyến khích|W|Encourage to learn.|Khuyến khích học.|support|strongly encourage
+end|/end/|n|kết thúc|G|At the end.|Lúc kết thúc.|finish|dead end
+ending|/ˈendɪŋ/|n|phần kết|E|Happy ending.|Kết thúc có hậu.|conclusion|sad ending
+enemy|/ˈenəmi/|n|kẻ thù|G|Public enemy.|Kẻ thù công chúng.|foe|bitter enemy
+energy|/ˈenədʒi/|n|năng lượng|N|Solar energy.|Năng lượng mặt trời.|power|save energy
+engage|/ɪnˈɡeɪdʒ/|v|thu hút, tham gia|W|Engage audience.|Thu hút khán giả.|involve|engage in
+engaged|/ɪnˈɡeɪdʒd/|adj|đã đính hôn|L|Get engaged.|Đính hôn.|committed|engaged to
+engine|/ˈendʒɪn/|n|động cơ|T|Car engine.|Động cơ ô tô.|motor|start engine
+engineer|/ˌendʒɪˈnɪə(r)/|n|kỹ sư|W|Software engineer.|Kỹ sư phần mềm.|creator|chief engineer
+engineering|/ˌendʒɪˈnɪərɪŋ/|n|ngành kỹ sư|W|Study engineering.|Học kỹ thuật.|design|civil engineering
+enhance|/ɪnˈhɑːns/|v|nâng cao|W|Enhance quality.|Nâng cao chất lượng.|improve|greatly enhance
+enjoy|/ɪnˈdʒɔɪ/|v|thưởng thức|F|Enjoy meal.|Thưởng thức bữa ăn.|like|really enjoy
+enormous|/ɪˈnɔːməs/|adj|to lớn|G|Enormous size.|Kích thước khổng lồ.|huge|enormous amount
+enough|/ɪˈnʌf/|adv|đủ|G|Fair enough.|Khá đủ.|sufficient|not enough
+enquiry|/ɪnˈkwaɪəri/|n|sự điều tra|W|Make enquiry.|Hỏi thăm.|question|public enquiry
+ensure|/ɪnˈʃʊə(r)/|v|đảm bảo|W|Ensure safety.|Đảm bảo an toàn.|make sure|ensure that
+enter|/ˈentə(r)/|v|đi vào|G|Enter room.|Vào phòng.|go in|enter password
+enterprise|/ˈentəpraɪz/|n|doanh nghiệp|W|Private enterprise.|Doanh nghiệp tư nhân.|business|commercial enterprise
+entertainment|/ˌentəˈteɪnmənt/|n|sự giải trí|E|Provide entertainment.|Cung cấp giải trí.|amusement|entertainment industry
+enthusiasm|/ɪnˈθjuːziæzəm/|n|sự nhiệt tình|F|Great enthusiasm.|Nhiệt tình lớn.|passion|full of enthusiasm
+enthusiastic|/ɪnˌθjuːziˈæstɪk/|adj|nhiệt tình|F|Enthusiastic fan.|Fan nhiệt tình.|eager|highly enthusiastic
+entire|/ɪnˈtaɪə(r)/|adj|toàn bộ|G|Entire world.|Toàn thế giới.|whole|entire life
+entirely|/ɪnˈtaɪəli/|adv|hoàn toàn|G|Entirely different.|Hoàn toàn khác.|completely|entirely sure
+entitle|/ɪnˈtaɪtl/|v|đặt tiêu đề, cho quyền|W|Entitle to vote.|Có quyền bầu cử.|name|fully entitled
+entrance|/ˈentrəns/|n|lối vào|G|Main entrance.|Lối vào chính.|entry|front entrance
+entry|/ˈentri/|n|sự đi vào|G|No entry.|Cấm vào.|access|gain entry
+environment|/ɪnˈvaɪrənmənt/|n|môi trường|N|Protect environment.|Bảo vệ môi trường.|nature|safe environment
+environmental|/ɪnˌvaɪrənˈmentl/|adj|thuộc môi trường|N|Environmental issue.|Vấn đề môi trường.|ecological|environmental impact
+equal|/ˈiːkwəl/|adj|công bằng|G|Equal rights.|Quyền bình đẳng.|fair|equal pay
+equally|/ˈiːkwəli/|adv|bằng nhau|G|Share equally.|Chia đều.|evenly|treat equally
+equipment|/ɪˈkwɪpmənt/|n|thiết bị|W|Office equipment.|Thiết bị VP.|gear|medical equipment
+error|/ˈerə(r)/|n|lỗi lầm|W|Human error.|Lỗi con người.|mistake|fatal error
+escape|/ɪˈskeɪp/|v|trốn thoát|G|Escape prison.|Vượt ngục.|flee|narrow escape
+especially|/ɪˈspeʃəli/|adv|đặc biệt|G|Especially good.|Đặc biệt tốt.|particularly|especially true
+essay|/ˈeseɪ/|n|bài luận|W|Write essay.|Viết luận.|paper|short essay
+essential|/ɪˈsenʃl/|adj|thiết yếu|G|Essential skills.|Kỹ năng cần thiết.|vital|absolutely essential
+essentially|/ɪˈsenʃəli/|adv|về bản chất|G|Essentially true.|Bản chất là đúng.|basically|essentially same
+establish|/ɪˈstæblɪʃ/|v|thành lập|W|Establish company.|Lập công ty.|found|firmly establish
+estate|/ɪˈsteɪt/|n|điền trang, BĐS|L|Real estate.|Bất động sản.|property|housing estate
+estimate|/ˈestɪmeɪt/|v|ước tính|W|Estimate cost.|Ước tính phí.|guess|rough estimate
+ethical|/ˈeθɪkl/|adj|đạo đức|W|Ethical choice.|Lựa chọn đạo đức.|moral|highly ethical
+evaluate|/ɪˈvæljueɪt/|v|đánh giá|W|Evaluate performance.|Đánh giá năng lực.|assess|carefully evaluate
+evaluation|/ɪˌvæljuˈeɪʃn/|n|sự đánh giá|W|Performance evaluation.|Sự đánh giá năng lực.|assessment|thorough evaluation
+even|/ˈiːvn/|adv|thậm chí|G|Even better.|Thậm chí tốt hơn.|yet|even though
+evening|/ˈiːvnɪŋ/|n|buổi tối|G|Good evening.|Chào buổi tối.|night|tomorrow evening
+event|/ɪˈvent/|n|sự kiện|E|Major event.|Sự kiện lớn.|occurrence|main event
+eventually|/ɪˈventʃuəli/|adv|cuối cùng|G|Eventually arrived.|Cuối cùng đã đến.|finally|eventually lead to
+ever|/ˈevə(r)/|adv|bao giờ|G|Ever since.|Kể từ đó.|always|hardly ever
+every|/ˈevri/|det|mỗi|G|Every day.|Mỗi ngày.|each|every time
+everyone|/ˈevriwʌn/|pron|mọi người|G|Everyone knows.|Mọi người đều biết.|everybody|everyone else
+everything|/ˈevriθɪŋ/|pron|mọi thứ|G|Everything is fine.|Mọi thứ đều ổn.|all|everything possible
+everywhere|/ˈevriweə(r)/|adv|mọi nơi|G|Go everywhere.|Đi mọi nơi.|all over|look everywhere
+evidence|/ˈevɪdəns/|n|bằng chứng|W|Scientific evidence.|Bằng chứng KH.|proof|clear evidence
+evil|/ˈiːvl/|adj|xấu xa|F|Evil spirit.|Linh hồn quỷ dữ.|wicked|necessary evil
+exact|/ɪɡˈzækt/|adj|chính xác|G|Exact time.|Thời gian chính xác.|precise|exact match
+exactly|/ɪɡˈzæktli/|adv|một cách chính xác|G|Exactly right.|Chính xác là vậy.|precisely|know exactly
+exam|/ɪɡˈzæm/|n|kỳ thi|W|Pass exam.|Đậu kỳ thi.|test|final exam
+examination|/ɪɡˌzæmɪˈneɪʃn/|n|sự kiểm tra|W|Medical examination.|Khám sức khỏe.|check|under examination
+examine|/ɪɡˈzæmɪn/|v|kiểm tra|H|Examine patient.|Khám bệnh nhân.|inspect|closely examine
+example|/ɪɡˈzɑːmpl/|n|ví dụ|G|For example.|Ví dụ như.|instance|classic example
+excellent|/ˈeksələnt/|adj|xuất sắc|F|Excellent job.|Công việc xuất sắc.|superb|truly excellent
+except|/ɪkˈsept/|prep|ngoại trừ|G|Except you.|Trừ bạn ra.|excluding|except for
+exception|/ɪkˈsepʃn/|n|ngoại lệ|G|Make exception.|Tạo ngoại lệ.|anomaly|with the exception of
+exchange|/ɪksˈtʃeɪndʒ/|v|trao đổi|W|Exchange rate.|Tỷ giá hối đoái.|swap|exchange ideas
+excitement|/ɪkˈsaɪtmənt/|n|sự phấn khích|F|Full of excitement.|Đầy phấn khích.|thrill|cause excitement
+exclude|/ɪkˈskluːd/|v|loại trừ|G|Exclude from.|Loại ra khỏi.|leave out|deliberately exclude
+excuse|/ɪkˈskjuːs/|n|lý do, cớ|G|Good excuse.|Lý do chính đáng.|reason|make an excuse
+executive|/ɪɡˈzekjətɪv/|n|giám đốc|W|Chief executive.|Giám đốc ĐH.|manager|executive decision
+exercise|/ˈeksəsaɪz/|n|bài tập|H|Do exercise.|Tập thể dục.|workout|regular exercise
+exhibition|/ˌeksɪˈbɪʃn/|n|triển lãm|E|Art exhibition.|Triển lãm NT.|display|hold exhibition
+exist|/ɪɡˈzɪst/|v|tồn tại|G|Aliens exist.|Ng ngoài hành tinh tồn tại.|live|cease to exist
+existence|/ɪɡˈzɪstəns/|n|sự tồn tại|G|In existence.|Đang tồn tại.|being|come into existence
+existing|/ɪɡˈzɪstɪŋ/|adj|hiện có|G|Existing rules.|Luật hiện hành.|current|existing system
+expand|/ɪkˈspænd/|v|mở rộng|W|Expand business.|Mở rộng KD.|grow|rapidly expand
+expansion|/ɪkˈspænʃn/|n|sự mở rộng|W|Rapid expansion.|Mở rộng nhanh.|growth|expansion plan
+expect|/ɪkˈspekt/|v|mong đợi|G|Expect best.|Mong điều tốt nhất.|anticipate|fully expect
+expectation|/ˌekspekˈteɪʃn/|n|sự mong đợi|G|High expectation.|Kỳ vọng cao.|hope|meet expectations
+expected|/ɪkˈspektɪd/|adj|được mong đợi|G|As expected.|Đúng như dự kiến.|anticipated|highly expected
+expense|/ɪkˈspens/|n|chi phí|W|Living expense.|Chi phí sống.|cost|at the expense of
+expensive|/ɪkˈspensɪv/|adj|đắt đỏ|L|Expensive car.|Xe đắt tiền.|costly|too expensive
+experience|/ɪkˈspɪəriəns/|n|kinh nghiệm|W|Work experience.|Kinh nghiệm lv.|knowledge|gain experience
+experienced|/ɪkˈspɪəriənst/|adj|có kinh nghiệm|W|Experienced staff.|Nhân viên có kn.|skilled|highly experienced
+experiment|/ɪkˈsperɪmənt/|n|thí nghiệm|W|Do experiment.|Làm thí nghiệm.|test|scientific experiment
+expert|/ˈekspɜːt/|n|chuyên gia|W|IT expert.|Chuyên gia IT.|specialist|expert advice
+explain|/ɪkˈspleɪn/|v|giải thích|W|Explain clearly.|Giải thích rõ.|clarify|explain fully
+explanation|/ˌekspləˈneɪʃn/|n|lời giải thích|W|Clear explanation.|Lời giải thích rõ.|reason|detailed explanation
+explode|/ɪkˈspləʊd/|v|phát nổ|G|Bomb exploded.|Bom nổ.|blow up|suddenly explode
+explore|/ɪkˈsplɔː(r)/|v|khám phá|T|Explore city.|Khám phá TP.|discover|explore options
+explosion|/ɪkˈspləʊʒn/|n|vụ nổ|G|Loud explosion.|Vụ nổ lớn.|blast|massive explosion
+export|/ˈekspɔːt/|v|xuất khẩu|W|Export goods.|Xuất hàng.|sell abroad|export market
+expose|/ɪkˈspəʊz/|v|phơi bày|G|Expose truth.|Bày sự thật.|reveal|expose secret
+express|/ɪkˈspres/|v|bày tỏ|F|Express feelings.|Bày tỏ cảm xúc.|state|freely express
+expression|/ɪkˈspreʃn/|n|sự biểu hiện|F|Facial expression.|Biểu cảm mặt.|look|expression of interest
+extend|/ɪkˈstend/|v|kéo dài|W|Extend deadline.|Kéo dài hạn.|lengthen|extend visa
+extension|/ɪkˈstenʃn/|n|sự mở rộng|W|Visa extension.|Gia hạn visa.|addition|build an extension
+extensive|/ɪkˈstensɪv/|adj|sâu rộng|G|Extensive damage.|Thiệt hại nặng.|broad|extensive research
+extent|/ɪkˈstent/|n|mức độ|G|To some extent.|Đến mức nào đó.|degree|full extent
+external|/ɪkˈstɜːnl/|adj|bên ngoài|G|External force.|Lực bên ngoài.|outer|external appearance
+extra|/ˈekstrə/|adj|thêm|G|Extra time.|Thêm giờ.|additional|extra charge
+extraordinary|/ɪkˈstrɔːdnri/|adj|phi thường|F|Extraordinary talent.|Tài năng phi thường.|amazing|quite extraordinary
+extreme|/ɪkˈstriːm/|adj|tột cùng|G|Extreme weather.|Thời tiết cực đoan.|severe|extreme poverty
+extremely|/ɪkˈstriːmli/|adv|cực kỳ|G|Extremely hot.|Cực nóng.|very|extremely difficult
+fabric|/ˈfæbrɪk/|n|vải|L|Cotton fabric.|Vải cotton.|cloth|soft fabric
+face|/feɪs/|v|đối mặt|G|Face problem.|Đối mặt VĐ.|confront|face facts
+facility|/fəˈsɪləti/|n|cơ sở|W|Sports facility.|Cơ sở thể thao.|amenity|excellent facility
+fact|/fækt/|n|sự thật|G|In fact.|Thực tế là.|truth|matter of fact
+factor|/ˈfæktə(r)/|n|nhân tố|G|Key factor.|Nhân tố chính.|element|deciding factor
+factory|/ˈfæktri/|n|nhà máy|W|Car factory.|Nhà máy ô tô.|plant|factory worker
+fail|/feɪl/|v|thất bại|W|Fail exam.|Rớt bài thi.|collapse|fail miserably
+failure|/ˈfeɪljə(r)/|n|sự thất bại|W|Total failure.|Thất bại thảm hại.|breakdown|complete failure
+fair|/feə(r)/|adj|công bằng|G|Fair play.|Chơi công bằng.|just|fair share
+fairly|/ˈfeəli/|adv|khá|G|Fairly easy.|Khá dễ.|quite|fairly good
+faith|/feɪθ/|n|niềm tin|F|Have faith.|Có niềm tin.|belief|blind faith
+fall|/fɔːl/|v|rơi|G|Fall down.|Ngã xuống.|drop|fall apart
+false|/fɔːls/|adj|sai|G|False alarm.|Báo động giả.|untrue|false impression
+familiar|/fəˈmɪliə(r)/|adj|quen thuộc|G|Familiar face.|Mặt quen.|known|look familiar
+family|/ˈfæməli/|n|gia đình|L|Big family.|Gia đình lớn.|relatives|family member
+famous|/ˈfeɪməs/|adj|nổi tiếng|E|Famous actor.|Diễn viên nổi tiếng.|well-known|world famous
+fan|/fæn/|n|người hâm mộ|E|Football fan.|Fan bóng đá.|supporter|big fan
+fancy|/ˈfænsi/|adj|sang trọng|L|Fancy dress.|Váy đẹp.|luxurious|fancy car
+fantastic|/fænˈtæstɪk/|adj|tuyệt vời|F|Fantastic idea.|Ý tưởng tuyệt vời.|wonderful|absolutely fantastic
+far|/fɑː(r)/|adv|xa|T|Far away.|Xa xôi.|distant|so far
+fare|/feə(r)/|n|giá vé|T|Bus fare.|Vé xe buýt.|ticket|pay fare
+farm|/fɑːm/|n|nông trại|N|Work on farm.|Làm ở nông trại.|ranch|farm animal
+farmer|/ˈfɑːmə(r)/|n|nông dân|W|Local farmer.|Nông dân địa phương.|grower|dairy farmer
+farming|/ˈfɑːmɪŋ/|n|nông nghiệp|W|Farming industry.|Ngành nông nghiệp.|agriculture|organic farming
+fascinating|/ˈfæsɪneɪtɪŋ/|adj|hấp dẫn|F|Fascinating story.|Chuyện hấp dẫn.|interesting|truly fascinating
+fashion|/ˈfæʃn/|n|thời trang|L|Latest fashion.|Thời trang mới.|style|fashion industry
+fashionable|/ˈfæʃnəbl/|adj|hợp thời trang|L|Fashionable clothes.|Đồ hợp thời trang.|trendy|highly fashionable
+fast|/fɑːst/|adj|nhanh|G|Fast car.|Xe nhanh.|quick|fast food
+fasten|/ˈfɑːsn/|v|thắt chặt|T|Fasten seatbelt.|Thắt dây an toàn.|secure|fasten securely
+fat|/fæt/|adj|béo|H|Fat cat.|Mèo béo.|plump|get fat
+father|/ˈfɑːðə(r)/|n|bố|L|My father.|Bố tôi.|dad|single father
+fault|/fɔːlt/|n|lỗi|G|My fault.|Lỗi tôi.|mistake|find fault
+favor|/ˈfeɪvə(r)/|n|ân huệ|G|Do a favor.|Làm ơn.|help|ask a favor
+favorite|/ˈfeɪvərɪt/|adj|yêu thích|F|Favorite color.|Màu yêu thích.|preferred|firm favorite
+fear|/fɪə(r)/|n|nỗi sợ|F|Overcome fear.|Vượt nỗi sợ.|terror|great fear
+feather|/ˈfeðə(r)/|n|lông vũ|N|Bird feather.|Lông chim.|plume|light as a feather
+feature|/ˈfiːtʃə(r)/|n|đặc điểm|W|Key feature.|Điểm chính.|characteristic|special feature
+february|/ˈfebruəri/|n|tháng 2|G|In February.|Vào T2.|month|early February
+fee|/fiː/|n|lệ phí|W|Pay fee.|Đóng phí.|charge|entrance fee
+feed|/fiːd/|v|cho ăn|L|Feed dog.|Cho chó ăn.|nourish|feed the baby
+feedback|/ˈfiːdbæk/|n|phản hồi|W|Give feedback.|Cho phản hồi.|response|positive feedback
+feel|/fiːl/|v|cảm thấy|F|Feel good.|Cảm thấy tốt.|sense|feel happy
+feeling|/ˈfiːlɪŋ/|n|cảm giác|F|Good feeling.|Cảm giác tốt.|emotion|strong feeling
+fellow|/ˈfeləʊ/|n|đồng chí|G|Fellow students.|Bạn cùng lớp.|peer|fellow citizen
+female|/ˈfiːmeɪl/|adj|nữ|G|Female worker.|Nữ công nhân.|woman|female lead
+fence|/fens/|n|hàng rào|L|Wooden fence.|Hàng rào gỗ.|barrier|jump fence
+festival|/ˈfestɪvl/|n|lễ hội|E|Music festival.|Lễ hội âm nhạc.|carnival|annual festival
+fetch|/fetʃ/|v|đi lấy|G|Fetch water.|Lấy nước.|get|go and fetch
+fever|/ˈfiːvə(r)/|n|cơn sốt|H|High fever.|Sốt cao.|temperature|catch a fever
+few|/fjuː/|det|một ít|G|A few days.|Vài ngày.|some|quite a few
+fiction|/ˈfɪkʃn/|n|tiểu thuyết|E|Science fiction.|Khoa học viễn tưởng.|story|romantic fiction
+field|/fiːld/|n|cánh đồng|N|Green field.|Cánh đồng xanh.|meadow|football field
+fierce|/fɪəs/|adj|dữ dội|F|Fierce competition.|Cạnh tranh dữ dội.|ferocious|fierce dog
+fight|/faɪt/|v|đánh nhau|G|Fight hard.|Đánh hăng.|battle|fight back
+figure|/ˈfɪɡə(r)/|n|con số|W|Sales figure.|Doanh số.|number|exact figure
+file|/faɪl/|n|hồ sơ|W|Open file.|Mở file.|document|computer file
+fill|/fɪl/|v|làm đầy|G|Fill up.|Đổ đầy.|pack|fill the glass
+film|/fɪlm/|n|phim|E|Watch film.|Xem phim.|movie|feature film
+final|/ˈfaɪnl/|adj|cuối cùng|G|Final test.|Thi cuối kỳ.|last|final decision
+finally|/ˈfaɪnəli/|adv|cuối cùng thì|G|Finally arrived.|Cuối cùng đã tới.|eventually|finally decided
+finance|/ˈfaɪnæns/|n|tài chính|W|Minister of finance.|Bộ trưởng TC.|economics|personal finance
+financial|/faɪˈnænʃl/|adj|thuộc tài chính|W|Financial crisis.|Khủng hoảng TC.|economic|financial support
+find|/faɪnd/|v|tìm thấy|G|Find job.|Tìm việc.|discover|hard to find
+finding|/ˈfaɪndɪŋ/|n|phát hiện|W|New finding.|Phát hiện mới.|discovery|key finding
+fine|/faɪn/|adj|tốt|F|I'm fine.|Tôi khỏe.|good|perfectly fine
+finger|/ˈfɪŋɡə(r)/|n|ngón tay|H|Index finger.|Ngón trỏ.|digit|point a finger
+finish|/ˈfɪnɪʃ/|v|hoàn thành|G|Finish work.|Xong việc.|complete|nearly finish
+fire|/faɪə(r)/|n|lửa|G|Catch fire.|Bắt lửa.|flame|light a fire
+firm|/fɜːm/|n|công ty|W|Law firm.|Công ty luật.|company|business firm
+firmly|/ˈfɜːmli/|adv|chắc chắn|G|Hold firmly.|Giữ chắc.|strongly|believe firmly
+first|/fɜːst/|adj|đầu tiên|G|First time.|Lần đầu.|initial|at first
+firstly|/ˈfɜːstli/|adv|trước tiên|G|Firstly, I agree.|Đầu tiên, tôi đồng ý.|first|firstly and foremost
+fish|/fɪʃ/|n|cá|N|Catch fish.|Bắt cá.|seafood|fresh fish
+fishing|/ˈfɪʃɪŋ/|n|câu cá|E|Go fishing.|Đi câu cá.|angling|fishing boat
+fit|/fɪt/|adj|vừa vặn|L|Shoes fit.|Giày vừa.|suitable|keep fit
+fix|/fɪks/|v|sửa|W|Fix car.|Sửa xe.|repair|quick fix
+fixed|/fɪkst/|adj|cố định|G|Fixed price.|Giá cố định.|set|fixed income
+flag|/flæɡ/|n|lá cờ|G|National flag.|Quốc kỳ.|banner|wave a flag
+flame|/fleɪm/|n|ngọn lửa|G|Bright flame.|Lửa sáng.|blaze|burst into flames
+flash|/flæʃ/|n|tia sáng|G|Camera flash.|Đèn flash.|spark|flash of light
+flat|/flæt/|n|căn hộ|L|Rent flat.|Thuê căn hộ.|apartment|flat tire
+flavor|/ˈfleɪvə(r)/|n|hương vị|L|Sweet flavor.|Vị ngọt.|taste|add flavor
+flesh|/fleʃ/|n|thịt|H|Human flesh.|Thịt người.|meat|flesh and blood
+flight|/flaɪt/|n|chuyến bay|T|Book flight.|Đặt vé bay.|journey|direct flight
+float|/fləʊt/|v|nổi|N|Float on water.|Nổi trên nước.|drift|float away
+flood|/flʌd/|n|lũ lụt|N|Massive flood.|Lũ lớn.|deluge|flash flood
+floor|/flɔː(r)/|n|sàn nhà|L|Sweep floor.|Quét nhà.|ground|ground floor
+flour|/ˈflaʊə(r)/|n|bột mì|L|Wheat flour.|Bột mì.|powder|bake with flour
+flow|/fləʊ/|v|chảy|N|Water flows.|Nước chảy.|stream|cash flow
+flower|/ˈflaʊə(r)/|n|hoa|N|Red flower.|Hoa đỏ.|bloom|pick flower
+flu|/fluː/|n|cúm|H|Catch flu.|Mắc cúm.|influenza|bird flu
+fly|/flaɪ/|v|bay|T|Fly to Paris.|Bay tới Paris.|soar|fly high
+flying|/ˈflaɪɪŋ/|adj|biết bay|T|Flying saucer.|Đĩa bay.|aviation|fear of flying
+focus|/ˈfəʊkəs/|v|tập trung|W|Focus on work.|Tập trung làm.|concentrate|lose focus
+fold|/fəʊld/|v|gấp|L|Fold paper.|Gấp giấy.|bend|fold neatly
+folding|/ˈfəʊldɪŋ/|adj|gấp được|L|Folding chair.|Ghế gấp.|collapsible|folding table
+folk|/fəʊk/|n|dân gian|E|Folk music.|Nhạc dân gian.|traditional|folk tale
+follow|/ˈfɒləʊ/|v|theo sau|G|Follow me.|Theo tôi.|pursue|follow closely
+following|/ˈfɒləʊɪŋ/|adj|tiếp theo|G|Following day.|Ngày hôm sau.|next|following week
+food|/fuːd/|n|thức ăn|L|Healthy food.|Thức ăn tốt.|meal|fast food
+foot|/fʊt/|n|bàn chân|H|Left foot.|Chân trái.|paw|on foot
+football|/ˈfʊtbɔːl/|n|bóng đá|E|Play football.|Chơi bóng đá.|soccer|football match
+for|/fə(r)/|prep|cho|G|For you.|Cho bạn.|to|wait for
+force|/fɔːs/|n|lực lượng|W|Police force.|Lực lượng CS.|power|driving force
+forecast|/ˈfɔːkɑːst/|n|dự báo|W|Weather forecast.|Dự báo TT.|prediction|accurate forecast
+foreign|/ˈfɒrən/|adj|nước ngoài|T|Foreign language.|Ngoại ngữ.|overseas|foreign policy
+forest|/ˈfɒrɪst/|n|rừng|N|Dark forest.|Rừng tối.|woods|dense forest
+forever|/fərˈevə(r)/|adv|mãi mãi|G|Live forever.|Sống mãi.|always|last forever
+forget|/fəˈɡet/|v|quên|G|Don't forget.|Đừng quên.|overlook|never forget
+forgive|/fəˈɡɪv/|v|tha thứ|F|Forgive me.|Tha thứ tôi.|pardon|forgive easily
+fork|/fɔːk/|n|cái nĩa|L|Knife and fork.|Dao nĩa.|prong|use a fork
+form|/fɔːm/|n|mẫu đơn|W|Fill form.|Điền đơn.|document|application form
+formal|/ˈfɔːml/|adj|trang trọng|G|Formal dress.|Đồ trang trọng.|official|formal event
+formally|/ˈfɔːməli/|adv|trang trọng|G|Dress formally.|Ăn mặc lịch sự.|officially|formally announce
+format|/ˈfɔːmæt/|n|định dạng|W|File format.|Định dạng file.|layout|standard format
+formation|/fɔːˈmeɪʃn/|n|sự hình thành|W|Rock formation.|Hình thành đá.|creation|formation of
+former|/ˈfɔːmə(r)/|adj|cũ, trước đây|G|Former boss.|Sếp cũ.|previous|former glory
+formerly|/ˈfɔːməli/|adv|trước đây|G|Formerly known.|Từng được biết.|previously|formerly employed
+formula|/ˈfɔːmjələ/|n|công thức|W|Math formula.|Công thức toán.|equation|secret formula
+fort|/fɔːt/|n|pháo đài|T|Ancient fort.|Pháo đài cổ.|fortress|hold the fort
+forth|/fɔːθ/|adv|về phía trước|G|Back and forth.|Qua lại.|forward|go forth
+fortunate|/ˈfɔːtʃənət/|adj|may mắn|F|Feel fortunate.|Thấy may mắn.|lucky|extremely fortunate
+fortune|/ˈfɔːtʃuːn/|n|gia tài|W|Make fortune.|Kiếm bộn tiền.|wealth|good fortune
+forward|/ˈfɔːwəd/|adv|về phía trước|G|Look forward.|Mong chờ.|ahead|step forward
+found|/faʊnd/|v|thành lập|W|Found company.|Lập công ty.|establish|newly founded
+foundation|/faʊnˈdeɪʃn/|n|nền tảng|W|Strong foundation.|Nền tảng vững.|base|lay foundation
+frame|/freɪm/|n|khung|L|Picture frame.|Khung ảnh.|border|wooden frame
+free|/friː/|adj|tự do|G|Free speech.|Tự do ngôn luận.|independent|feel free
+freedom|/ˈfriːdəm/|n|tự do|G|Freedom of choice.|Tự do lựa chọn.|liberty|fight for freedom
+freely|/ˈfriːli/|adv|tự do|G|Speak freely.|Nói tự do.|openly|freely admit
+freeze|/friːz/|v|đóng băng|N|Water freezes.|Nước đóng băng.|solidify|freeze to death
+frequent|/ˈfriːkwənt/|adj|thường xuyên|G|Frequent visits.|Thăm thường xuyên.|regular|frequent traveler
+frequently|/ˈfriːkwəntli/|adv|thường xuyên|G|Meet frequently.|Gặp thường xuyên.|often|occur frequently
+fresh|/freʃ/|adj|tươi|L|Fresh fruit.|Trái cây tươi.|new|fresh air
+freshly|/ˈfreʃli/|adv|vừa mới|L|Freshly baked.|Vừa nướng.|newly|freshly brewed
+friction|/ˈfrɪkʃn/|n|ma sát|W|Cause friction.|Gây ma sát.|rubbing|create friction
+friday|/ˈfraɪdeɪ/|n|thứ Sáu|G|On Friday.|Vào T6.|day|last Friday
+friend|/frend/|n|bạn bè|L|Good friend.|Bạn tốt.|mate|close friend
+friendly|/ˈfrendli/|adj|thân thiện|F|Friendly staff.|Nhân viên thân thiện.|welcoming|eco-friendly
+friendship|/ˈfrendʃɪp/|n|tình bạn|F|True friendship.|Tình bạn thật.|bond|close friendship
+frighten|/ˈfraɪtn/|v|làm sợ|F|Frighten him.|Làm anh ấy sợ.|scare|frighten easily
+frightened|/ˈfraɪtnd/|adj|hoảng sợ|F|Feel frightened.|Cảm thấy sợ.|scared|look frightened
+frightening|/ˈfraɪtnɪŋ/|adj|kinh khủng|F|Frightening experience.|Trải nghiệm sợ hãi.|scary|really frightening
+frog|/frɒɡ/|n|con ếch|N|Green frog.|Ếch xanh.|toad|catch frog
+from|/frəm/|prep|từ|G|From home.|Từ nhà.|origin|from now on
+front|/frʌnt/|n|phía trước|G|In front.|Ở trước.|fore|front door
+frozen|/ˈfrəʊzn/|adj|đông lạnh|L|Frozen food.|Đồ đông lạnh.|icy|frozen solid
+fruit|/fruːt/|n|trái cây|L|Eat fruit.|Ăn trái cây.|produce|fresh fruit
+fry|/fraɪ/|v|chiên|L|Fry egg.|Chiên trứng.|cook|deep fry
+fuel|/ˈfjuːəl/|n|nhiên liệu|T|Fossil fuel.|Nhiên liệu hóa thạch.|gas|fuel tank
+fulfill|/fʊlˈfɪl/|v|hoàn thành|W|Fulfill promise.|Thực hiện lời hứa.|achieve|fulfill dream
+full|/fʊl/|adj|đầy|G|Full glass.|Ly đầy.|complete|full time
+fully|/ˈfʊli/|adv|hoàn toàn|G|Fully understand.|Hiểu hoàn toàn.|completely|fully aware
+fun|/fʌn/|n|niềm vui|E|Have fun.|Vui vẻ nhé.|enjoyment|great fun
+function|/ˈfʌŋkʃn/|n|chức năng|W|Main function.|Chức năng chính.|role|vital function
+fund|/fʌnd/|n|quỹ|W|Raise fund.|Gây quỹ.|capital|trust fund
+fundamental|/ˌfʌndəˈmentl/|adj|cơ bản|W|Fundamental right.|Quyền cơ bản.|basic|fundamental change
+funeral|/ˈfjuːnərəl/|n|đám tang|L|Attend funeral.|Dự đám tang.|burial|funeral service
+funny|/ˈfʌni/|adj|hài hước|F|Funny joke.|Trò đùa vui.|humorous|really funny
+fur|/fɜː(r)/|n|lông thú|N|Soft fur.|Lông mềm.|hair|animal fur
+furniture|/ˈfɜːnɪtʃə(r)/|n|nội thất|L|Buy furniture.|Mua nội thất.|furnishings|wooden furniture
+further|/ˈfɜːðə(r)/|adv|xa hơn|G|Go further.|Đi xa hơn.|beyond|further information
+furthermore|/ˌfɜːðəˈmɔː(r)/|adv|hơn nữa|G|Furthermore, I agree.|Hơn nữa, tôi đồng ý.|moreover|and furthermore
+future|/ˈfjuːtʃə(r)/|n|tương lai|G|In future.|Trong TL.|tomorrow|bright future`.trim();
+
+// Trình giải nén: Tách chuỗi khổng lồ thành mảng đối tượng
+const fullVocabulary = rawString.split('\n').filter(Boolean).map(row => {
+  const [word, ipa, pos, meaning, tCode, example, translation, synonyms, collocations] = row.split('|');
+  const topicMap = {
+    'T': 'Travel', 'H': 'Health', 'W': 'Work & Edu', 'N': 'Nature',
+    'E': 'Leisure', 'L': 'Life', 'F': 'Feelings', 'G': 'General'
+  };
+  return { 
+    word, ipa, pos, meaning, 
+    topic: topicMap[tCode] || 'General', 
+    example, translation,
+    synonyms: synonyms || 'Đang cập nhật...',
+    collocations: collocations || 'Đang cập nhật...'
+  };
+}).sort((a, b) => a.word.localeCompare(b.word));
+
+// --- GEMINI API INTEGRATION ---
+// Cần sử dụng API Key từ biến môi trường. Do yêu cầu hệ thống: const apiKey = "";
+const apiKey = "";
+
+const callGeminiAPI = async (prompt) => {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  const payload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    systemInstruction: { parts: [{ text: "Bạn là một giáo viên tiếng Anh nhiệt tình, chuyên luyện thi IELTS/CEFR B2. Trả lời bằng tiếng Việt, dùng markdown để format nội dung in đậm, in nghiêng cho đẹp mắt." }] }
+  };
+
+  let retries = 5;
+  let delay = 1000;
+  while (retries > 0) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error("API Error");
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "Không có phản hồi.";
+    } catch (error) {
+      retries--;
+      if (retries === 0) return "**Lỗi:** Đã có lỗi kết nối đến AI. Vui lòng thử lại sau.";
+      await new Promise(res => setTimeout(res, delay));
+      delay *= 2;
+    }
+  }
+};
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTopic, setFilterTopic] = useState('All');
+  const [currentFlashcard, setCurrentFlashcard] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [quizOptions, setQuizOptions] = useState([]);
+
+  // AI Modal States
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiCurrentWord, setAiCurrentWord] = useState(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState('');
+  const [aiMode, setAiMode] = useState('explain'); // 'explain' or 'practice'
+  const [userSentence, setUserSentence] = useState('');
+
+  // Danh mục Topic (Màu Đỏ Hồng - Rose)
+  const topicConfig = {
+    'All': { label: 'Tất cả', icon: <LayoutGrid className="w-4 h-4" />, color: 'bg-rose-600' },
+    'Travel': { label: 'Du lịch', icon: <Plane className="w-4 h-4" />, color: 'bg-blue-500' },
+    'Health': { label: 'Sức khỏe', icon: <Heart className="w-4 h-4" />, color: 'bg-red-500' },
+    'Work & Edu': { label: 'Học & Làm', icon: <GraduationCap className="w-4 h-4" />, color: 'bg-amber-600' },
+    'Nature': { label: 'Thiên nhiên', icon: <Leaf className="w-4 h-4" />, color: 'bg-emerald-600' },
+    'Leisure': { label: 'Giải trí', icon: <Music className="w-4 h-4" />, color: 'bg-purple-600' },
+    'Life': { label: 'Đời sống', icon: <Home className="w-4 h-4" />, color: 'bg-sky-600' },
+    'Feelings': { label: 'Cảm xúc', icon: <Smile className="w-4 h-4" />, color: 'bg-pink-600' },
+    'General': { label: 'Tổng hợp', icon: <Tags className="w-4 h-4" />, color: 'bg-slate-500' },
+  };
+
+  const topics = Object.keys(topicConfig);
+
+  // Lọc từ vựng
+  const filteredVocab = useMemo(() => {
+    return fullVocabulary.filter(item => {
+      const matchesSearch = item.word.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            item.meaning.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTopic = filterTopic === 'All' || item.topic === filterTopic;
+      return matchesSearch && matchesTopic;
+    });
+  }, [searchQuery, filterTopic]);
+
+  const speak = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const generateOptions = (correctAnswer) => {
+    const pool = fullVocabulary.filter(item => item.meaning !== correctAnswer);
+    const others = pool
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3)
+      .map(item => item.meaning);
+    return [...others, correctAnswer].sort(() => 0.5 - Math.random());
+  };
+
+  useEffect(() => {
+    if (activeTab === 'quiz' && !quizFinished && filteredVocab.length > 0) {
+      if (quizIndex >= filteredVocab.length) setQuizIndex(0);
+      setQuizOptions(generateOptions(filteredVocab[quizIndex].meaning));
+    }
+  }, [quizIndex, activeTab, quizFinished, filteredVocab]);
+
+  const handleQuizAnswer = (answer) => {
+    setSelectedAnswer(answer);
+    if (answer === filteredVocab[quizIndex].meaning) setQuizScore(quizScore + 1);
+    setTimeout(() => {
+      if (quizIndex < filteredVocab.length - 1) {
+        setQuizIndex(quizIndex + 1);
+        setSelectedAnswer(null);
+      } else {
+        setQuizFinished(true);
+      }
+    }, 800);
+  };
+
+  // --- AI Handlers ---
+  const handleOpenAiModal = (wordObj) => {
+    setAiCurrentWord(wordObj);
+    setIsAiModalOpen(true);
+    setAiResponse('');
+    setAiMode('explain');
+    setUserSentence('');
+    handleExplainWord(wordObj);
+  };
+
+  const handleExplainWord = async (wordObj) => {
+    setAiMode('explain');
+    setIsAiLoading(true);
+    const prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B2. Trình bày ngắn gọn, dễ hiểu.`;
+    const response = await callGeminiAPI(prompt);
+    setAiResponse(response);
+    setIsAiLoading(false);
+  };
+
+  const handleCheckSentence = async () => {
+    if (!userSentence.trim()) return;
+    setIsAiLoading(true);
+    const prompt = `Tôi đang học từ tiếng Anh "${aiCurrentWord.word}". Đánh giá câu sau của tôi: "${userSentence}". Hãy chỉ ra lỗi ngữ pháp hoặc cách dùng từ (nếu có), giải thích lý do, và đề xuất 1-2 cách viết ở trình độ B2/C1 tự nhiên hơn. Trình bày ngắn gọn, thân thiện.`;
+    const response = await callGeminiAPI(prompt);
+    setAiResponse(response);
+    setIsAiLoading(false);
+  };
+
+  const renderAiText = (text) => {
+    if (!text) return null;
+    return text.split('\n').map((line, i) => {
+      if (!line.trim()) return <br key={i} />;
+      const parts = line.split(/(\*\*.*?\*\*)/g);
+      return (
+        <p key={i} className="mb-2 text-[15px] leading-relaxed">
+          {parts.map((part, j) => 
+            part.startsWith('**') && part.endsWith('**') 
+              ? <strong key={j} className="text-rose-900">{part.slice(2, -2)}</strong> 
+              : part
+          )}
+        </p>
+      );
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-10">
+      <header className="bg-rose-600 text-white shadow-lg sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
+              <BookOpen className="w-8 h-8" />
+              B2 MAX PRO CHECKLIST
+            </h1>
+            <nav className="flex bg-rose-700/50 p-1 rounded-2xl backdrop-blur-sm">
+              <button onClick={() => setActiveTab('list')} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-rose-600 shadow-xl' : 'text-white/80 hover:text-white'}`}>
+                <LayoutGrid className="w-4 h-4" /> Danh sách ({filteredVocab.length})
+              </button>
+              <button onClick={() => {setActiveTab('flashcard'); setCurrentFlashcard(0);}} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-rose-600 shadow-xl' : 'text-white/80 hover:text-white'}`}>
+                <Brain className="w-4 h-4" /> Thẻ nhớ
+              </button>
+              <button onClick={() => {setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0);}} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-rose-600 shadow-xl' : 'text-white/80 hover:text-white'}`}>
+                <CheckCircle className="w-4 h-4" /> Kiểm tra
+              </button>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto p-4 md:p-6 lg:p-10">
+        <div className="mb-8 space-y-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-rose-500 transition-colors" />
+              <input 
+                type="text" placeholder="Tra cứu từ vựng B2, nghĩa, hoặc từ đồng nghĩa..." 
+                className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:ring-4 focus:ring-rose-100 focus:border-rose-500 outline-none shadow-sm transition-all"
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth">
+            <Filter className="w-5 h-5 text-slate-400 flex-shrink-0" />
+            {topics.map(topic => (
+              <button 
+                key={topic} 
+                onClick={() => {setFilterTopic(topic); setQuizIndex(0); setQuizFinished(false); setCurrentFlashcard(0);}}
+                className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${filterTopic === topic ? 'bg-rose-600 text-white border-rose-600 shadow-rose-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+              >
+                {topicConfig[topic].icon}
+                {topicConfig[topic].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {activeTab === 'list' && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredVocab.map((item, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all group animate-fade-in flex flex-col h-full relative overflow-hidden">
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div>
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md text-white mb-2 inline-block ${topicConfig[item.topic].color}`}>
+                      {topicConfig[item.topic].label}
+                    </span>
+                    <h3 className="text-xl font-black text-slate-800 capitalize group-hover:text-rose-600 transition-colors">{item.word}</h3>
+                    <p className="text-slate-400 text-sm font-medium mt-1">{item.ipa} • <span className="text-rose-500 italic">{item.pos}</span></p>
+                  </div>
+                  <button onClick={() => speak(item.word)} className="p-3 rounded-full bg-slate-50 text-rose-600 hover:bg-rose-600 hover:text-white transition shadow-sm active:scale-90">
+                    <Volume2 className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <p className="text-slate-800 font-bold text-base mb-4 relative z-10">💡 {item.meaning}</p>
+                
+                <div className="bg-rose-50/50 p-4 rounded-2xl border-l-4 border-rose-400 flex-grow flex flex-col relative z-10">
+                  <p className="text-sm text-slate-600 mb-2 leading-relaxed italic">"{item.example}"</p>
+                  <p className="text-[11px] text-slate-400 font-bold uppercase mb-4">{item.translation}</p>
+                  
+                  <div className="mt-auto pt-3 border-t border-rose-100/50 flex flex-col gap-1.5">
+                    <div className="text-[11px]">
+                      <span className="font-bold text-rose-700 mr-1">🔗 Đồng nghĩa:</span>
+                      <span className="text-slate-600">{item.synonyms}</span>
+                    </div>
+                    <div className="text-[11px]">
+                      <span className="font-bold text-rose-700 mr-1">📝 Cụm từ hay:</span>
+                      <span className="text-slate-600">{item.collocations}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => handleOpenAiModal(item)}
+                  className="absolute bottom-4 right-4 bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white p-2 rounded-xl transition-all shadow-sm flex items-center gap-1 text-[10px] font-bold z-20 group-hover:scale-105"
+                >
+                  <Sparkles className="w-3 h-3" /> AI
+                </button>
+              </div>
+            ))}
+            {filteredVocab.length === 0 && (
+              <div className="col-span-full py-32 text-center">
+                <div className="bg-rose-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-rose-300" />
+                </div>
+                <p className="text-slate-400 font-bold italic text-lg">Không tìm thấy từ nào khớp hết trơn...</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'flashcard' && filteredVocab.length > 0 && (
+          <div className="flex flex-col items-center py-12 space-y-10 relative">
+            <div className="bg-rose-100 text-rose-700 px-6 py-2 rounded-full text-sm font-black shadow-sm ring-4 ring-white">
+              TỪ {currentFlashcard + 1} TRÊN {filteredVocab.length}
+            </div>
+
+            <div 
+              className={`relative w-full max-w-md h-[450px] cursor-pointer transition-all duration-700 preserve-3d group ${isFlipped ? 'rotate-y-180' : ''}`}
+              onClick={() => setIsFlipped(!isFlipped)}
+              style={{ perspective: '1200px' }}
+            >
+              <div className={`absolute inset-0 bg-white rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
+                   {topicConfig[filteredVocab[currentFlashcard].topic].icon}
+                </div>
+                <h2 className="text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center">{filteredVocab[currentFlashcard].word}</h2>
+                <p className="text-slate-400 text-2xl font-medium tracking-wide">{filteredVocab[currentFlashcard].ipa}</p>
+                <div className="mt-16 flex items-center gap-3 text-slate-300 text-xs font-black uppercase tracking-[0.2em]">
+                  <Play className="w-4 h-4" /> Chạm để lật thẻ
+                </div>
+              </div>
+
+              <div 
+                className={`absolute inset-0 bg-rose-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+                style={{ transform: 'rotateY(180deg)' }}
+              >
+                <span className="text-rose-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
+                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-rose-300 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
+                
+                <div className="w-full flex flex-col gap-1.5 mb-4 bg-rose-700/50 p-4 rounded-2xl text-left border border-rose-500/30">
+                  <p className="text-[13px]"><span className="font-bold text-rose-200">🔗 Đồng nghĩa:</span> {filteredVocab[currentFlashcard].synonyms}</p>
+                  <p className="text-[13px]"><span className="font-bold text-rose-200">📝 Cụm từ hay:</span> {filteredVocab[currentFlashcard].collocations}</p>
+                </div>
+
+                <p className="italic text-rose-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
+                <p className="text-[11px] text-rose-200 text-center font-bold tracking-wider uppercase opacity-90">{filteredVocab[currentFlashcard].translation}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 sm:gap-8 items-center">
+              <button 
+                disabled={currentFlashcard === 0} 
+                onClick={() => { setCurrentFlashcard(prev => prev - 1); setIsFlipped(false); }} 
+                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              <button 
+                onClick={() => speak(filteredVocab[currentFlashcard].word)} 
+                className="px-8 py-5 rounded-full bg-rose-600 text-white font-black hover:bg-rose-700 shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-8 ring-rose-50"
+              >
+                <Volume2 className="w-6 h-6" /> PHÁT ÂM
+              </button>
+              <button 
+                onClick={() => handleOpenAiModal(filteredVocab[currentFlashcard])}
+                className="px-8 py-5 rounded-full bg-indigo-600 text-white font-black hover:bg-indigo-700 shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-8 ring-indigo-50"
+              >
+                <Sparkles className="w-6 h-6" /> HỎI AI
+              </button>
+              <button 
+                disabled={currentFlashcard === filteredVocab.length - 1} 
+                onClick={() => { setCurrentFlashcard(prev => prev + 1); setIsFlipped(false); }} 
+                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'quiz' && filteredVocab.length > 0 && (
+          <div className="max-w-2xl mx-auto pt-6">
+            {!quizFinished ? (
+              <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
+                <div className="flex justify-between items-center mb-12">
+                  <div className="flex flex-col">
+                    <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">TIẾN ĐỘ ({topicConfig[filterTopic].label})</span>
+                    <span className="text-slate-800 font-black text-lg">{quizIndex + 1} / {filteredVocab.length}</span>
+                  </div>
+                  <div className="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-2xl font-black text-sm shadow-sm border border-emerald-100 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" /> ĐÚNG: {quizScore}
+                  </div>
+                </div>
+
+                <div className="text-center mb-12">
+                  <p className="text-slate-400 text-sm font-bold mb-4 uppercase tracking-widest">Từ này nghĩa là gì?</p>
+                  <h3 className="text-6xl font-black text-slate-800 capitalize mb-8 tracking-tighter">{filteredVocab[quizIndex].word}</h3>
+                  <button 
+                    onClick={() => speak(filteredVocab[quizIndex].word)} 
+                    className="p-4 bg-rose-50 rounded-full text-rose-600 hover:text-rose-700 transition-all hover:scale-110 active:scale-90"
+                  >
+                    <Volume2 className="w-10 h-10" />
+                  </button>
+                </div>
+
+                <div className="grid gap-4">
+                  {quizOptions.map((option, idx) => (
+                    <button
+                      key={idx} 
+                      onClick={() => !selectedAnswer && handleQuizAnswer(option)}
+                      className={`w-full p-6 rounded-3xl text-left border-4 transition-all font-black text-lg shadow-sm flex justify-between items-center group ${
+                        selectedAnswer === option 
+                          ? (option === filteredVocab[quizIndex].meaning ? 'bg-emerald-50 border-emerald-500 text-emerald-700 scale-[1.03]' : 'bg-rose-50 border-rose-500 text-rose-700 shake') 
+                          : selectedAnswer && option === filteredVocab[quizIndex].meaning 
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
+                          : 'bg-white border-slate-100 hover:border-rose-400 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{option}</span>
+                      {selectedAnswer === option && (
+                        option === filteredVocab[quizIndex].meaning ? <CheckCircle className="w-6 h-6" /> : <RotateCcw className="w-6 h-6" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white p-16 rounded-[50px] shadow-2xl text-center border border-rose-50 animate-zoom-in">
+                <div className="w-28 h-28 bg-rose-100 text-rose-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
+                  <Brain className="w-14 h-14" />
+                </div>
+                <h2 className="text-4xl font-black text-slate-800 mb-4">TUYỆT VỜI ÔNG MẶT TRỜI!</h2>
+                <p className="text-slate-500 font-bold mb-12 italic text-lg">Bạn đã chinh phục được {quizScore} trên {filteredVocab.length} thử thách!</p>
+                <div className="relative inline-block mb-16">
+                  <svg className="w-48 h-48 transform -rotate-90">
+                    <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-slate-100" />
+                    <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" strokeDasharray="552.9" strokeDashoffset={552.9 - (552.9 * (quizScore / filteredVocab.length))} className="text-rose-600 transition-all duration-1000 ease-out" />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-5xl font-black text-rose-700">{Math.round((quizScore / filteredVocab.length) * 100)}%</span>
+                  </div>
+                </div>
+                <div>
+                  <button 
+                    onClick={() => { setQuizIndex(0); setQuizScore(0); setQuizFinished(false); setSelectedAnswer(null); }} 
+                    className="px-16 py-6 bg-rose-600 text-white rounded-3xl font-black text-xl shadow-2xl hover:bg-rose-700 transition-all hover:scale-105 active:scale-95 shadow-rose-200 ring-8 ring-rose-50"
+                  >
+                    HỌC LẠI NÀO!
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* --- MODAL AI TRỢ GIẢNG --- */}
+      {isAiModalOpen && aiCurrentWord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            
+            <div className="bg-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-xl">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-black text-xl">AI Trợ Giảng B2</h3>
+                  <p className="text-indigo-200 text-sm font-medium">Đang học: <span className="text-white capitalize">{aiCurrentWord.word}</span></p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsAiModalOpen(false)}
+                className="bg-indigo-700 hover:bg-indigo-800 p-2 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex border-b border-slate-100 shrink-0">
+              <button 
+                onClick={() => handleExplainWord(aiCurrentWord)}
+                className={`flex-1 py-4 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${aiMode === 'explain' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+              >
+                <BookOpen className="w-4 h-4" /> Giải thích sâu
+              </button>
+              <button 
+                onClick={() => { setAiMode('practice'); setAiResponse(''); setUserSentence(''); }}
+                className={`flex-1 py-4 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${aiMode === 'practice' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+              >
+                <Brain className="w-4 h-4" /> Đặt câu với AI
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+              {aiMode === 'practice' && (
+                <div className="mb-6 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Thử đặt một câu với từ "{aiCurrentWord.word}" ở trình độ B2:</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="Type your English sentence here..."
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                      value={userSentence}
+                      onChange={(e) => setUserSentence(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCheckSentence()}
+                    />
+                    <button 
+                      onClick={handleCheckSentence}
+                      disabled={isAiLoading || !userSentence.trim()}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 rounded-xl font-bold flex items-center justify-center transition-colors disabled:opacity-50"
+                    >
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm min-h-[200px]">
+                {isAiLoading ? (
+                  <div className="flex flex-col items-center justify-center h-full py-10 gap-4">
+                    <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <p className="text-indigo-600 font-bold animate-pulse">AI đang suy nghĩ...</p>
+                  </div>
+                ) : aiResponse ? (
+                  <div className="text-slate-700">
+                    {renderAiText(aiResponse)}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full py-10 text-slate-400">
+                    <Sparkles className="w-12 h-12 mb-3 text-slate-200" />
+                    <p className="text-sm font-medium">
+                      {aiMode === 'explain' 
+                        ? 'Nhấn nút để AI giải thích sắc thái từ vựng B2 này.' 
+                        : 'Viết câu của bạn ở trên để AI chấm điểm ngữ pháp.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      <footer className="max-w-6xl mx-auto px-6 py-10 text-center">
+        <div className="flex items-center justify-center gap-2 text-slate-300 font-black tracking-widest uppercase text-xs">
+          <BookOpen className="w-4 h-4" />
+          B2 Level Vocabulary • Full Data ({fullVocabulary.length} Từ)
+        </div>
+      </footer>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .preserve-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes zoom-in {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-zoom-in { animation: zoom-in 0.4s ease-out; }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        .shake { animation: shake 0.2s ease-in-out 0s 2; }
+      `}} />
+    </div>
+  );
+};
+
+export default App;
