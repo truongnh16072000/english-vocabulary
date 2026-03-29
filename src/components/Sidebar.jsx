@@ -36,14 +36,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   return (
     <>
       {/* Mobile Menu Button - Floating */}
-      <div className="lg:hidden fixed top-6 left-6 z-[60]">
-        <button 
-          onClick={() => setIsMobileOpen(true)}
-          className="p-3 bg-white rounded-2xl shadow-xl text-slate-600 border border-slate-100 hover:bg-slate-50 transition-all active:scale-90"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
-      </div>
+      {!isMobileOpen && (
+        <div className="lg:hidden fixed top-6 left-6 z-[60]">
+          <button 
+            onClick={() => setIsMobileOpen(true)}
+            className="p-3 bg-white rounded-2xl shadow-xl text-slate-600 border border-slate-100 hover:bg-slate-50 transition-all active:scale-90"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+      )}
 
       {/* Mobile Overlay */}
       <AnimatePresence>
