@@ -9,6 +9,7 @@ import { playSound } from '../utils/sounds';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, color: 'text-sky-500' },
@@ -19,94 +20,128 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, color: 'text-slate-500' },
   ];
 
+  const handleNavClick = (id) => {
+    setActiveTab(id);
+    playSound('select');
+    setIsMobileOpen(false);
+  };
+
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? 80 : 280 }}
-      className={`sidebar-glass h-screen sticky top-0 z-50 flex flex-col transition-all duration-300 shadow-2xl overflow-hidden`}
-    >
-      {/* Header */}
-      <div className="p-6 flex items-center justify-between">
-        {!isCollapsed && (
-          <motion.div 
+    <>
+      {/* Mobile Menu Button - Floating */}
+      <div className="lg:hidden fixed top-6 left-6 z-[60]">
+        <button 
+          onClick={() => setIsMobileOpen(true)}
+          className="p-3 bg-white rounded-2xl shadow-xl text-slate-600 border border-slate-100 hover:bg-slate-50 transition-all active:scale-90"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <span className="font-extrabold text-xl tracking-tight text-slate-800">Antigravity</span>
-          </motion.div>
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileOpen(false)}
+            className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 px-4"
+          />
         )}
-        <button 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-        >
-          {isCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
-        </button>
-      </div>
+      </AnimatePresence>
 
-      {/* Nav Items */}
-      <nav className="flex-1 px-4 mt-6 space-y-2">
-        {menuItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                playSound('select');
-              }}
-              className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 group relative
-                ${isActive ? 'active-nav-item text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}
-              `}
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: isCollapsed ? 80 : 280,
+          x: typeof window !== 'undefined' && window.innerWidth < 1024 ? (isMobileOpen ? 0 : -320) : 0
+        }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className={`sidebar-glass h-screen fixed lg:sticky top-0 left-0 z-50 flex flex-col shadow-2xl overflow-hidden transition-[width] duration-300`}
+      >
+        {/* Header */}
+        <div className="p-6 flex items-center justify-between shrink-0">
+          {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-3"
             >
-              <div className={`${!isActive && item.color} transition-colors group-hover:scale-110 duration-200`}>
-                {item.icon}
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                <Sparkles className="w-6 h-6" />
               </div>
-              {!isCollapsed && (
-                <motion.span 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="font-bold text-sm tracking-wide"
-                >
-                  {item.label}
-                </motion.span>
-              )}
-              {isActive && (
-                <motion.div 
-                  layoutId="active-nav"
-                  className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white shadow-sm"
-                />
-              )}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Footer Profile */}
-      <div className="p-4 border-t border-slate-100">
-        <div className={`flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 border-2 border-white shadow-sm overflow-hidden">
-             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
-          </div>
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">Nhật Trường</p>
-              <p className="text-xs text-slate-500 truncate italic">A2 Learner</p>
-            </div>
+              <span className="font-extrabold text-xl tracking-tight text-slate-800">Antigravity</span>
+            </motion.div>
           )}
+          <button 
+            onClick={() => isMobileOpen ? setIsMobileOpen(false) : setIsCollapsed(!isCollapsed)}
+            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors lg:block"
+          >
+            {isMobileOpen ? <X className="w-5 h-5" /> : (isCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />)}
+          </button>
         </div>
-        <button 
-          className={`w-full mt-4 flex items-center gap-4 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors ${isCollapsed ? 'justify-center' : ''}`}
-        >
-          <LogOut className="w-5 h-5" />
-          {!isCollapsed && <span className="font-bold text-sm">Logout</span>}
-        </button>
-      </div>
-    </motion.aside>
+
+        {/* Nav Items */}
+        <nav className="flex-1 px-4 mt-6 space-y-2 overflow-y-auto no-scrollbar">
+          {menuItems.map((item) => {
+            const isActive = activeTab === item.id;
+            const screenIsSmall = typeof window !== 'undefined' && window.innerWidth < 1024;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 group relative
+                  ${isActive ? 'active-nav-item text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}
+                `}
+              >
+                <div className={`${!isActive && item.color} transition-colors group-hover:scale-110 duration-200 grow-0 shrink-0`}>
+                  {item.icon}
+                </div>
+                {(!isCollapsed || screenIsSmall) && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="font-bold text-sm tracking-wide truncate"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+                {isActive && (
+                  <motion.div 
+                    layoutId="active-nav"
+                    className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white shadow-sm"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer Profile */}
+        <div className="p-4 border-t border-slate-100 shrink-0">
+          <div className={`flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 ${(isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024) ? 'justify-center' : ''}`}>
+            <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 border-2 border-white shadow-sm overflow-hidden">
+               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
+            </div>
+            {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-800 truncate">Nhật Trường</p>
+                <p className="text-xs text-slate-500 truncate italic">A2 Learner</p>
+              </div>
+            )}
+          </div>
+          <button 
+            className={`w-full mt-4 flex items-center gap-4 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors ${(isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024) ? 'justify-center' : ''}`}
+          >
+            <LogOut className="w-5 h-5 shrink-0" />
+            {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && <span className="font-bold text-sm">Logout</span>}
+          </button>
+        </div>
+      </motion.aside>
+    </>
   );
 };
+
 
 export default Sidebar;

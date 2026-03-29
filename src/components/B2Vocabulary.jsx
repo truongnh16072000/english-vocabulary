@@ -1223,18 +1223,19 @@ const B1Vocabulary = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-10">
       {/* Inner Tabs for Vocabulary App - Aligned with A2 style */}
       <div className="max-w-6xl mx-auto px-4 py-4 border-b border-slate-100 mb-6">
-        <nav className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
-          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <LayoutGrid className="w-4 h-4" /> Danh sách ({filteredVocab.length})
+        <nav className="flex bg-slate-100 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
+          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
+            <LayoutGrid className="w-4 h-4" /> <span className="hidden xs:inline">Danh sách</span> ({filteredVocab.length})
           </button>
-          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <Brain className="w-4 h-4" /> Thẻ nhớ
+          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
+            <Brain className="w-4 h-4" /> <span className="hidden xs:inline">Thẻ nhớ</span>
           </button>
-          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <CheckCircle className="w-4 h-4" /> Kiểm tra
+          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
+            <CheckCircle className="w-4 h-4" /> <span className="hidden xs:inline">Kiểm tra</span>
           </button>
         </nav>
       </div>
+
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 lg:p-10">
         <div className="mb-8 space-y-6">

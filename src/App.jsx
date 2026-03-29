@@ -11,10 +11,10 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans selection:bg-indigo-100 italic overscroll-none">
+    <div className="flex min-h-screen bg-slate-50 font-sans selection:bg-indigo-100 italic overscroll-none overflow-x-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="flex-1 min-w-0 p-4 md:p-8 lg:p-12 transition-all duration-300">
+      <main className="flex-1 min-w-0 p-4 md:p-8 lg:p-12 pt-24 lg:pt-12 transition-all duration-300">
         {/* Header removed as requested */}
 
         <section className="max-w-7xl mx-auto">
