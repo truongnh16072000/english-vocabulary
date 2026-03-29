@@ -10,6 +10,6 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    outDir: 'dist/english', // Move files into a subfolder
+    outDir: 'dist',
   }
 })
