@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, BookOpen, LayoutDashboard, Settings, 
   Search, LogOut, ChevronRight, GraduationCap,
@@ -10,6 +10,13 @@ import { playSound } from '../utils/sounds';
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, color: 'text-sky-500' },
@@ -55,14 +62,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         initial={false}
         animate={{ 
           width: isCollapsed ? 80 : 280,
-          x: typeof window !== 'undefined' && window.innerWidth < 1024 ? (isMobileOpen ? 0 : -320) : 0
+          x: windowWidth < 1024 ? (isMobileOpen ? 0 : -320) : 0
         }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className={`sidebar-glass h-screen fixed lg:sticky top-0 left-0 z-50 flex flex-col shadow-2xl overflow-hidden transition-[width] duration-300`}
       >
         {/* Header */}
         <div className="p-6 flex items-center justify-between shrink-0">
-          {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
+          {(!isCollapsed || windowWidth < 1024) && (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -86,7 +93,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         <nav className="flex-1 px-4 mt-6 space-y-2 overflow-y-auto no-scrollbar">
           {menuItems.map((item) => {
             const isActive = activeTab === item.id;
-            const screenIsSmall = typeof window !== 'undefined' && window.innerWidth < 1024;
+            const screenIsSmall = windowWidth < 1024;
             return (
               <button
                 key={item.id}
@@ -120,11 +127,11 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
         {/* Footer Profile */}
         <div className="p-4 border-t border-slate-100 shrink-0">
-          <div className={`flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 ${(isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024) ? 'justify-center' : ''}`}>
+          <div className={`flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 ${(isCollapsed && windowWidth >= 1024) ? 'justify-center' : ''}`}>
             <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 border-2 border-white shadow-sm overflow-hidden">
                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
             </div>
-            {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
+            {(!isCollapsed || windowWidth < 1024) && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-800 truncate">Nhật Trường</p>
                 <p className="text-xs text-slate-500 truncate italic">A2 Learner</p>
@@ -132,12 +139,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             )}
           </div>
           <button 
-            className={`w-full mt-4 flex items-center gap-4 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors ${(isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024) ? 'justify-center' : ''}`}
+            className={`w-full mt-4 flex items-center gap-4 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors ${(isCollapsed && windowWidth >= 1024) ? 'justify-center' : ''}`}
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && <span className="font-bold text-sm">Logout</span>}
+            {(!isCollapsed || windowWidth < 1024) && <span className="font-bold text-sm">Logout</span>}
           </button>
         </div>
+
       </motion.aside>
     </>
   );

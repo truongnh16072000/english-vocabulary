@@ -1222,22 +1222,22 @@ const B1Vocabulary = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-10">
       {/* Inner Tabs for Vocabulary App - Aligned with A2 style */}
-      <div className="max-w-6xl mx-auto px-4 py-4 border-b border-slate-100 mb-6">
-        <nav className="flex bg-slate-100 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
-          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <LayoutGrid className="w-4 h-4" /> <span className="hidden xs:inline">Danh sách</span> ({filteredVocab.length})
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 py-4 border-b border-slate-100 mb-6 font-sans">
+        <nav className="flex bg-slate-100 p-1 rounded-xl sm:rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
+          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
+            <LayoutGrid className="w-4 h-4" /> <span className="inline">Danh sách</span>
           </button>
-          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <Brain className="w-4 h-4" /> <span className="hidden xs:inline">Thẻ nhớ</span>
+          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
+            <Brain className="w-4 h-4" /> <span className="inline">Thẻ nhớ</span>
           </button>
-          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
-            <CheckCircle className="w-4 h-4" /> <span className="hidden xs:inline">Kiểm tra</span>
+          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-teal-500'}`}>
+            <CheckCircle className="w-4 h-4" /> <span className="inline">Kiểm tra</span>
           </button>
         </nav>
       </div>
 
 
-      <main className="max-w-6xl mx-auto p-4 md:p-6 lg:p-10">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-10">
         <div className="mb-8 space-y-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1 group">
@@ -1417,10 +1417,10 @@ const B1Vocabulary = () => {
         {activeTab === 'quiz' && filteredVocab.length > 0 && (
           <div className="max-w-2xl mx-auto pt-6 px-4">
             {!quizActive ? (
-              <motion.div 
+               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white p-12 rounded-[50px] shadow-2xl border border-slate-100 text-center"
+                className="bg-white p-6 sm:p-12 rounded-[40px] sm:rounded-[50px] shadow-2xl border border-slate-100 text-center"
               >
                 <div className="w-24 h-24 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
                   <Trophy className="w-12 h-12" />
@@ -1443,7 +1443,7 @@ const B1Vocabulary = () => {
                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Dữ liệu lấy từ danh sách đang lọc ({topicConfig[filterTopic].label})</p>
               </motion.div>
             ) : !quizFinished ? (
-              <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
+              <div className="bg-white p-6 sm:p-10 rounded-[30px] sm:rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
                 <div className="flex justify-between items-center mb-12">
                   <div className="flex flex-col text-left">
                     <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">TIẾN ĐỘ</span>
@@ -1487,7 +1487,7 @@ const B1Vocabulary = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white p-16 rounded-[50px] shadow-2xl text-center border border-teal-50 animate-zoom-in">
+              <div className="bg-white p-8 sm:p-16 rounded-[40px] sm:rounded-[50px] shadow-2xl text-center border border-teal-50 animate-zoom-in">
                 <div className="w-28 h-28 bg-teal-100 text-teal-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
                   <Brain className="w-14 h-14" />
                 </div>
