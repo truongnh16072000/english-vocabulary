@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, BookOpen, LayoutDashboard, Settings, 
-  Search, LogOut, ChevronRight, GraduationCap,
-  Sparkles, Layers, BookMarked
+  Search, LogOut, ChevronRight, ChevronLeft, GraduationCap,
+  Sparkles, Layers, BookMarked, Sidebar as SidebarIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playSound } from '../utils/sounds';
@@ -71,7 +71,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         className={`sidebar-glass h-screen fixed lg:sticky top-0 left-0 z-50 flex flex-col shadow-2xl overflow-hidden transition-[width] duration-300`}
       >
         {/* Header */}
-        <div className="p-6 flex items-center justify-between shrink-0">
+        <div className={`p-6 flex items-center shrink-0 ${isCollapsed && windowWidth >= 1024 ? 'justify-center px-0' : 'justify-between'}`}>
           {(!isCollapsed || windowWidth < 1024) && (
             <motion.div 
               initial={{ opacity: 0 }}
@@ -86,9 +86,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           )}
           <button 
             onClick={() => isMobileOpen ? setIsMobileOpen(false) : setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors lg:block"
+            className={`p-2 rounded-xl bg-slate-50 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 transition-all border border-slate-100 h-10 w-10 flex items-center justify-center shadow-sm active:scale-90`}
+            title={isCollapsed ? "Mở rộng" : "Thu nhỏ"}
           >
-            {isMobileOpen ? <X className="w-5 h-5" /> : (isCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />)}
+            {isMobileOpen ? <X className="w-5 h-5" /> : (isCollapsed ? <ChevronRight className="w-6 h-6" /> : <ChevronLeft className="w-5 h-5" />)}
           </button>
         </div>
 

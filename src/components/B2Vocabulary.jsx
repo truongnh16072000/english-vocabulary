@@ -9,7 +9,9 @@ import {
   Leaf, Music, Home, Smile, Filter, Sparkles, X, Send,
   Eye, EyeOff, Trophy, Mic, MicOff, AlertCircle
 } from 'lucide-react';
-import { calculateSimilarity, getDiff } from '../utils/speech';
+import { callGeminiAPI } from '../utils/gemini';
+import PronunciationModal from './common/PronunciationModal';
+import AiAssistantModal from './common/AiAssistantModal';
 
 /* * KỸ THUẬT SIÊU NÉN DỮ LIỆU (STRING COMPRESSION) CHO B2
  * Định dạng: word|ipa|pos|meaning|topic_code|example|translation|synonyms|collocations
@@ -947,34 +949,8 @@ const fullVocabulary = rawString.split('\n').filter(Boolean).map(row => {
   };
 }).sort((a, b) => a.word.localeCompare(b.word));
 
-// --- GEMINI API INTEGRATION ---
-// Cần sử dụng API Key từ biến môi trường.
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-const callGeminiAPI = async (prompt) => {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const payload = {
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    system_instruction: { parts: [{ text: "Bạn là một giáo viên tiếng Anh nhiệt tình, dễ hiểu. Trả lời bằng tiếng Việt, dùng markdown để format nội dung in đậm, in nghiêng cho đẹp mắt." }] }
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      console.error("Gemini API Error:", data);
-      return `**Lỗi:** ${data.error?.message || "Đã có lỗi kết nối đến AI."}`;
-    }
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Không có phản hồi.";
-  } catch (error) {
-    console.error("Network Error:", error);
-    return "**Lỗi:** Không thể kết nối đến máy chủ AI.";
-  }
-};
+// --- Sử dụng tiện ích GEMINI API tập trung ---
+// callGeminiAPI đã được import từ src/utils/gemini.js.
 
 const B2Vocabulary = () => {
   const [activeTab, setActiveTab] = useState('list');
@@ -1030,71 +1006,13 @@ const B2Vocabulary = () => {
   const [aiCurrentWord, setAiCurrentWord] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState('');
-  const [aiMode, setAiMode] = useState('practice'); // 'practice', 'explain', 'pronounce'
   const [userSentence, setUserSentence] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [pronunciationResult, setPronunciationResult] = useState(null);
+  const [isPronounceModalOpen, setIsPronounceModalOpen] = useState(false);
 
-  const startListening = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert("Trình duyệt không hỗ trợ nhận diện giọng nói. Vui lòng sử dụng Chrome hoặc Safari mới nhất.");
-      return;
-    }
+  // Random Flashcards State
+  const [shuffledFlashcards, setShuffledFlashcards] = useState([]);
 
-    if (!aiCurrentWord) return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      setIsListening(false);
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      const score = calculateSimilarity(aiCurrentWord.word, transcript);
-      const diff = getDiff(aiCurrentWord.word, transcript);
-      const result = { 
-        transcript, 
-        score, 
-        diff,
-        isPerfect: score >= 90
-      };
-      
-      setPronunciationResult(result);
-      
-      if (score >= 90) {
-        playSound('correct');
-      } else if (score < 50) {
-        playSound('wrong');
-      }
-    };
-
-    recognition.start();
-  };
-
-  const handleOpenPronounce = (item) => {
-    setAiCurrentWord(item);
-    setAiMode('pronounce');
-    setIsAiModalOpen(true);
-    setPronunciationResult(null);
-    setAiResponse('');
-  };
-
-  useEffect(() => {
-    if (isAiModalOpen && aiMode === 'pronounce' && !isListening && !pronunciationResult) {
-      const timer = setTimeout(() => {
-        startListening();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isAiModalOpen, aiMode]);
 
   // Trạng thái từ đã học
   const [showLearned, setShowLearned] = useState(false);
@@ -1145,6 +1063,14 @@ const B2Vocabulary = () => {
       return matchesSearch && matchesTopic && matchesLearned;
     });
   }, [searchQuery, filterTopic, learnedWords, showLearned]);
+
+  useEffect(() => {
+    if (activeTab === 'flashcard' && filteredVocab.length > 0) {
+      const shuffled = [...filteredVocab].sort(() => Math.random() - 0.5);
+      setShuffledFlashcards(shuffled);
+      setCurrentFlashcard(0);
+    }
+  }, [activeTab, filterTopic, filteredVocab]);
 
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -1218,12 +1144,16 @@ const B2Vocabulary = () => {
     setAiCurrentWord(wordObj);
     setIsAiModalOpen(true);
     setAiResponse('');
-    setAiMode('practice');
     setUserSentence('');
+    handleExplainWord(wordObj);
+  };
+
+  const handleOpenPronounce = (wordObj) => {
+    setAiCurrentWord(wordObj);
+    setIsPronounceModalOpen(true);
   };
 
   const handleExplainWord = async (wordObj) => {
-    setAiMode('explain');
     setIsAiLoading(true);
     const prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B2. Trình bày ngắn gọn, dễ hiểu.`;
     const response = await callGeminiAPI(prompt);
@@ -1238,49 +1168,6 @@ const B2Vocabulary = () => {
     const response = await callGeminiAPI(prompt);
     setAiResponse(response);
     setIsAiLoading(false);
-  };
-
-  // Trình phân tích markdown nâng cao cho kết quả AI
-  const renderAiText = (text) => {
-    if (!text) return null;
-    return text.split('\n').map((line, i) => {
-      const trimmedLine = line.trim();
-      if (!trimmedLine) return <br key={i} />;
-      
-      // Header check
-      if (trimmedLine.startsWith('#')) {
-        const level = trimmedLine.match(/^#+/)[0].length;
-        const content = trimmedLine.replace(/^#+\s*/, '');
-        const sizeClass = level === 1 ? 'text-xl' : level === 2 ? 'text-lg' : 'text-md';
-        return <h4 key={i} className={`${sizeClass} font-black text-emerald-700 mt-4 mb-2`}>{content}</h4>;
-      }
-
-      // List check
-      if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-        const content = trimmedLine.replace(/^[-*]\s*/, '');
-        return (
-          <div key={i} className="flex gap-3 mb-2 ml-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 shrink-0"></div>
-            <p className="text-[15px] leading-relaxed flex-1">{renderBoldText(content)}</p>
-          </div>
-        );
-      }
-
-      return (
-        <p key={i} className="mb-2 text-[15px] leading-relaxed">
-          {renderBoldText(line)}
-        </p>
-      );
-    });
-  };
-
-  const renderBoldText = (text) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, j) => 
-      part.startsWith('**') && part.endsWith('**') 
-        ? <strong key={j} className="text-emerald-900">{part.slice(2, -2)}</strong> 
-        : part
-    );
   };
 
   return (
@@ -1417,10 +1304,10 @@ const B2Vocabulary = () => {
           </div>
         )}
 
-        {activeTab === 'flashcard' && filteredVocab.length > 0 && (
+        {activeTab === 'flashcard' && shuffledFlashcards.length > 0 && (
           <div className="flex flex-col items-center py-12 space-y-10 relative">
             <div className="bg-emerald-100 text-emerald-700 px-6 py-2 rounded-full text-sm font-black shadow-sm ring-4 ring-white">
-              TỪ {currentFlashcard + 1} TRÊN {filteredVocab.length}
+              TỪ {currentFlashcard + 1} TRÊN {shuffledFlashcards.length}
             </div>
 
             <div 
@@ -1430,11 +1317,11 @@ const B2Vocabulary = () => {
             >
               {/* MẶT TRƯỚC */}
               <div className={`absolute inset-0 bg-white rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
-                   {topicConfig[filteredVocab[currentFlashcard].topic].icon}
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[shuffledFlashcards[currentFlashcard].topic].color}`}>
+                   {topicConfig[shuffledFlashcards[currentFlashcard].topic].icon}
                 </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center break-words px-4 leading-tight">{filteredVocab[currentFlashcard].word}</h2>
-                <p className="text-slate-400 text-2xl font-medium tracking-wide">{filteredVocab[currentFlashcard].ipa}</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center break-words px-4 leading-tight">{shuffledFlashcards[currentFlashcard].word}</h2>
+                <p className="text-slate-400 text-2xl font-medium tracking-wide">{shuffledFlashcards[currentFlashcard].ipa}</p>
                 <div className="mt-16 flex items-center gap-3 text-slate-300 text-xs font-black uppercase tracking-[0.2em]">
                   <Play className="w-4 h-4" /> Chạm để lật thẻ
                 </div>
@@ -1445,45 +1332,53 @@ const B2Vocabulary = () => {
                 className={`absolute inset-0 bg-emerald-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
                 style={{ transform: 'rotateY(180deg)' }}
               >
-                <span className="text-emerald-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
-                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-emerald-300 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
+                <span className="text-emerald-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[shuffledFlashcards[currentFlashcard].topic].label}</span>
+                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-emerald-300 underline-offset-8">{shuffledFlashcards[currentFlashcard].meaning}</h3>
                 
                 <div className="w-full flex flex-col gap-1.5 mb-4 bg-emerald-700/50 p-4 rounded-2xl text-left border border-emerald-500/30">
-                  <p className="text-[13px]"><span className="font-bold text-emerald-200">🔗 Đồng nghĩa:</span> {filteredVocab[currentFlashcard].synonyms}</p>
-                  <p className="text-[13px]"><span className="font-bold text-emerald-200">📝 Cụm từ hay:</span> {filteredVocab[currentFlashcard].collocations}</p>
+                  <p className="text-[13px]"><span className="font-bold text-emerald-200">🔗 Đồng nghĩa:</span> {shuffledFlashcards[currentFlashcard].synonyms}</p>
+                  <p className="text-[13px]"><span className="font-bold text-emerald-200">📝 Cụm từ hay:</span> {shuffledFlashcards[currentFlashcard].collocations}</p>
                 </div>
 
-                <p className="italic text-emerald-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
-                <p className="text-[11px] text-emerald-200 text-center font-bold tracking-wider uppercase opacity-90">{filteredVocab[currentFlashcard].translation}</p>
+                <p className="italic text-emerald-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{shuffledFlashcards[currentFlashcard].example}"</p>
+                <p className="text-[11px] text-emerald-200 text-center font-bold tracking-wider uppercase opacity-90">{shuffledFlashcards[currentFlashcard].translation}</p>
               </div>
             </div>
 
-            <div className="flex gap-4 sm:gap-8 items-center">
+            <div className="flex gap-3 sm:gap-6 items-center flex-wrap justify-center">
               <button 
                 disabled={currentFlashcard === 0} 
                 onClick={() => { setCurrentFlashcard(prev => prev - 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
+                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
-                <ChevronLeft className="w-8 h-8" />
+                <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button 
-                onClick={() => speak(filteredVocab[currentFlashcard].word)} 
-                className="px-8 py-5 rounded-full bg-emerald-600 text-white font-black hover:bg-emerald-700 shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-8 ring-emerald-50"
+                onClick={() => speak(shuffledFlashcards[currentFlashcard].word)} 
+                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-emerald-500 hover:bg-emerald-600 hover:text-white transition-all shadow-lg active:scale-95"
+                title="Nghe"
               >
-                <Volume2 className="w-6 h-6" /> PHÁT ÂM
+                <Volume2 className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button 
-                onClick={() => handleOpenAiModal(filteredVocab[currentFlashcard])}
-                className="px-8 py-5 rounded-full bg-purple-600 text-white font-black hover:bg-purple-700 shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-8 ring-purple-50"
+                onClick={() => handleOpenPronounce(shuffledFlashcards[currentFlashcard])}
+                className={`px-6 sm:px-8 py-4 sm:py-5 rounded-full font-black shadow-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50`}
               >
-                <Sparkles className="w-6 h-6" /> HỎI AI
+                <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> PHÁT ÂM
               </button>
               <button 
-                disabled={currentFlashcard === filteredVocab.length - 1} 
+                onClick={() => handleOpenAiModal(shuffledFlashcards[currentFlashcard])}
+                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
+                title="Hỏi AI"
+              >
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8" />
+              </button>
+              <button 
+                disabled={currentFlashcard === shuffledFlashcards.length - 1} 
                 onClick={() => { setCurrentFlashcard(prev => prev + 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-xl active:scale-95"
+                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
-                <ChevronRight className="w-8 h-8" />
+                <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
             </div>
           </div>
@@ -1495,7 +1390,7 @@ const B2Vocabulary = () => {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white p-12 rounded-[50px] shadow-2xl border border-slate-100 text-center"
+                className="bg-white p-6 sm:p-12 rounded-[40px] sm:rounded-[50px] shadow-2xl border border-slate-100 text-center"
               >
                 <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
                   <Trophy className="w-12 h-12" />
@@ -1518,7 +1413,7 @@ const B2Vocabulary = () => {
                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Dữ liệu lấy từ danh sách đang lọc ({topicConfig[filterTopic].label})</p>
               </motion.div>
             ) : !quizFinished ? (
-              <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
+              <div className="bg-white p-6 sm:p-10 rounded-[30px] sm:rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
                 <div className="flex justify-between items-center mb-12">
                   <div className="flex flex-col text-left">
                     <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">TIẾN ĐỘ</span>
@@ -1562,7 +1457,7 @@ const B2Vocabulary = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white p-16 rounded-[50px] shadow-2xl text-center border border-emerald-50 animate-zoom-in">
+              <div className="bg-white p-8 sm:p-16 rounded-[40px] sm:rounded-[50px] shadow-2xl text-center border border-emerald-50 animate-zoom-in">
                 <div className="w-28 h-28 bg-emerald-100 text-emerald-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
                   <Brain className="w-14 h-14" />
                 </div>
@@ -1582,10 +1477,16 @@ const B2Vocabulary = () => {
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                   <button 
-                    onClick={() => setQuizActive(false)} 
-                    className="w-full sm:w-auto px-12 py-5 bg-emerald-600 text-white rounded-3xl font-black text-lg shadow-xl hover:bg-emerald-700 transition-all active:scale-95"
+                    onClick={() => { setQuizActive(false); playSound('click'); }}
+                    className="flex-1 py-4 sm:py-6 px-10 rounded-[25px] sm:rounded-[35px] bg-slate-100 text-slate-600 font-black text-xs sm:text-sm hover:bg-slate-200 transition-all uppercase tracking-widest active:scale-95"
                   >
-                    LÀM BÀI MỚI
+                    Đóng
+                  </button>
+                  <button 
+                    onClick={() => startNewQuiz(quizSize)}
+                    className="flex-1 py-4 sm:py-6 px-10 rounded-[25px] sm:rounded-[35px] bg-emerald-600 text-white font-black text-xs sm:text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 uppercase tracking-widest active:scale-95"
+                  >
+                    Thử lại
                   </button>
                 </div>
               </div>
@@ -1594,198 +1495,25 @@ const B2Vocabulary = () => {
         )}
       </main>
 
-      {/* --- MODAL AI TRỢ GIẢNG (Sử dụng Portal để không bị ảnh hưởng bởi transform) --- */}
-      {isAiModalOpen && aiCurrentWord && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}>
-          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            
-            {/* Modal Header */}
-            <div className="bg-purple-600 p-6 flex justify-between items-center text-white shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 p-2 rounded-xl">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-black text-xl">AI Trợ Giảng</h3>
-                  <p className="text-purple-200 text-sm font-medium">Đang học: <span className="text-white capitalize">{aiCurrentWord.word}</span></p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsAiModalOpen(false)}
-                className="bg-purple-700 hover:bg-purple-800 p-2 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Navigation */}
-            <div className="flex border-b border-slate-100 shrink-0">
-              <button 
-                onClick={() => { setAiMode('practice'); setAiResponse(''); setUserSentence(''); }}
-                className={`flex-1 py-4 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${aiMode === 'practice' ? 'text-purple-600 border-b-2 border-purple-600 bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
-              >
-                <Brain className="w-4 h-4" /> Đặt câu
-              </button>
-              <button 
-                onClick={() => { setAiMode('pronounce'); setPronunciationResult(null); }}
-                className={`flex-1 py-4 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${aiMode === 'pronounce' ? 'text-purple-600 border-b-2 border-purple-600 bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
-              >
-                <Mic className="w-4 h-4" /> Phát âm
-              </button>
-              <button 
-                onClick={() => handleExplainWord(aiCurrentWord)}
-                className={`flex-1 py-4 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${aiMode === 'explain' ? 'text-purple-600 border-b-2 border-purple-600 bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
-              >
-                < BookOpen className="w-4 h-4" /> Giải thích
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto flex-grow bg-slate-50/50">
-              {aiMode === 'practice' && (
-                <div className="mb-6 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Thử đặt một câu với từ "{aiCurrentWord.word}":</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      placeholder="Type your English sentence here..."
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
-                      value={userSentence}
-                      onChange={(e) => setUserSentence(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleCheckSentence()}
-                    />
-                    <button 
-                      onClick={handleCheckSentence}
-                      disabled={isAiLoading || !userSentence.trim()}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 rounded-xl font-bold flex items-center justify-center transition-colors disabled:opacity-50"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {aiMode === 'pronounce' && (
-                <div className="flex flex-col items-center gap-6 py-4">
-                  <div className="text-center">
-                    <h4 className="text-4xl font-black text-slate-800 mb-1 capitalize tracking-tight">{aiCurrentWord.word}</h4>
-                    <p className="text-lg text-purple-500 font-bold mb-4">{aiCurrentWord.ipa}</p>
-                    <div className="h-1 w-20 bg-purple-100 mx-auto rounded-full"></div>
-                  </div>
-
-                  <div className="relative py-4">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={startListening}
-                      disabled={isListening}
-                      className={`w-28 h-28 rounded-full flex items-center justify-center shadow-xl transition-all ${
-                        isListening 
-                        ? 'bg-rose-500 text-white ring-8 ring-rose-100' 
-                        : 'bg-purple-600 text-white hover:bg-purple-700'
-                      }`}
-                    >
-                      {isListening ? (
-                        <div className="relative">
-                          <Mic className="w-12 h-12" />
-                          <div className="absolute inset-0 bg-white/30 rounded-full animate-ping"></div>
-                        </div>
-                      ) : (
-                        <Mic className="w-12 h-12" />
-                      )}
-                    </motion.button>
-                     {isListening && (
-                      <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-rose-500 text-sm font-black whitespace-nowrap animate-pulse uppercase tracking-widest">
-                        Listening...
-                      </p>
-                    )}
-                  </div>
-
-                  {pronunciationResult && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="w-full bg-white rounded-[32px] p-8 border-2 border-purple-50 shadow-sm"
-                    >
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${pronunciationResult.score >= 80 ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
-                            {pronunciationResult.score >= 80 ? <Trophy className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-0.5">Accuracy</p>
-                            <p className={`text-4xl font-black leading-none ${pronunciationResult.score >= 80 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                              {pronunciationResult.score}%
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-                          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-1">You said</p>
-                          <p className="text-xl font-bold text-slate-700 italic leading-tight shrink-0 overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
-                            "{pronunciationResult.transcript}"
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bg-slate-900 rounded-3xl p-8 text-center shadow-inner relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Detailed Analysis</p>
-                        <div className="flex justify-center flex-wrap gap-1 font-mono text-4xl font-black">
-                          {pronunciationResult.diff.map((item, idx) => (
-                            <span 
-                              key={idx}
-                              className={`transition-all ${
-                                item.type === 'correct' ? 'text-emerald-400' : 'text-rose-400 bg-rose-500/10 px-1 rounded'
-                              }`}
-                              title={item.expected ? `Expected: ${item.expected}` : ''}
-                            >
-                              {item.char}
-                            </span>
-                          ))}
-                        </div>
-                        <p className={`mt-6 text-sm font-bold uppercase tracking-wider ${pronunciationResult.score >= 90 ? 'text-emerald-400' : 'text-purple-400/80'}`}>
-                           {pronunciationResult.score >= 90 
-                            ? "Perfect Pronunciation!" 
-                            : pronunciationResult.score >= 70 
-                            ? "Almost there! Fix red letters." 
-                            : "Keep practicing! Try again."}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              )}
-
-              {/* AI Response Area */}
-              <div className={aiMode === 'pronounce' && pronunciationResult ? 'hidden' : 'bg-white p-6 rounded-2xl border border-purple-100 shadow-sm min-h-[200px]'}>
-                {isAiLoading ? (
-                  <div className="flex flex-col items-center justify-center h-full py-10 gap-4">
-                    <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                    <p className="text-purple-600 font-bold animate-pulse">AI đang suy nghĩ...</p>
-                  </div>
-                ) : aiResponse ? (
-                  <div className="text-slate-700">
-                    {renderAiText(aiResponse)}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full py-10 text-slate-400">
-                    <Sparkles className="w-12 h-12 mb-3 text-slate-200" />
-                    <p className="text-sm font-medium">
-                      {aiMode === 'explain' 
-                        ? 'Nhấn nút để AI giải thích từ vựng này chi tiết hơn.' 
-                        : aiMode === 'pronounce'
-                        ? 'Nhấn mic để bắt đầu luyện phát âm từ này.'
-                        : 'Viết câu của bạn ở trên để AI chấm điểm và sửa lỗi.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>,
-        document.body
-      )}
+      <AiAssistantModal 
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        wordObj={aiCurrentWord}
+        onExplain={handleExplainWord}
+        onCheckSentence={handleCheckSentence}
+        aiResponse={aiResponse}
+        isAiLoading={isAiLoading}
+        userSentence={userSentence}
+        setUserSentence={setUserSentence}
+        themeColor="emerald"
+      />
+      
+      <PronunciationModal 
+        isOpen={isPronounceModalOpen}
+        onClose={() => setIsPronounceModalOpen(false)}
+        wordObj={aiCurrentWord}
+        themeColor="emerald"
+      />
 
       <footer className="max-w-6xl mx-auto px-6 py-10 text-center">
         <div className="flex items-center justify-center gap-2 text-slate-300 font-black tracking-widest uppercase text-xs">
