@@ -1,11 +1,12 @@
 import React, { useState, Suspense, lazy } from 'react';
 import Sidebar from './components/Sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Sparkles, BookOpen, GraduationCap, LayoutDashboard } from 'lucide-react';
+import { Loader2, Sparkles, BookOpen, GraduationCap, LayoutDashboard, Trophy } from 'lucide-react';
 
 const A2Vocabulary = lazy(() => import('./components/A2Vocabulary'));
 const B1Vocabulary = lazy(() => import('./components/B1Vocabulary'));
 const B2Vocabulary = lazy(() => import('./components/B2Vocabulary'));
+const ExaminePage = lazy(() => import('./components/ExaminePage'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 
 const App = () => {
@@ -59,6 +60,17 @@ const App = () => {
                 }>
                   <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
                      <B2Vocabulary />
+                  </div>
+                </Suspense>
+              ) : activeTab === 'examine' ? (
+                <Suspense fallback={
+                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
+                    <p className="font-bold text-slate-400 italic">Loading vocabulary quiz...</p>
+                  </div>
+                }>
+                  <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
+                     <ExaminePage />
                   </div>
                 </Suspense>
               ) : activeTab === 'dashboard' ? (

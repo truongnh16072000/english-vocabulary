@@ -10,10 +10,13 @@ const Dashboard = ({ setActiveTab }) => {
   const [stats, setStats] = useState({
     a2Total: 869,
     b1Total: 915,
+    b2Total: 841,
     a2Learned: 0,
     b1Learned: 0,
+    b2Learned: 0,
     a2Flashcard: 0,
     b1Flashcard: 0,
+    b2Flashcard: 0,
     streak: 3, // Giả lập streak
     lastStudy: 'Hôm nay'
   });
@@ -21,24 +24,29 @@ const Dashboard = ({ setActiveTab }) => {
   useEffect(() => {
     const a2Learned = JSON.parse(localStorage.getItem('a2_learned_words') || '[]');
     const b1Learned = JSON.parse(localStorage.getItem('b1_learned_words') || '[]');
+    const b2Learned = JSON.parse(localStorage.getItem('b2_learned_words') || '[]');
     const a2Flash = parseInt(localStorage.getItem('a2_flashcard_progress') || '0', 10);
     const b1Flash = parseInt(localStorage.getItem('b1_flashcard_progress') || '0', 10);
+    const b2Flash = parseInt(localStorage.getItem('b2_flashcard_progress') || '0', 10);
 
     setStats(prev => ({
       ...prev,
       a2Learned: a2Learned.length,
       b1Learned: b1Learned.length,
+      b2Learned: b2Learned.length,
       a2Flashcard: a2Flash,
-      b1Flashcard: b1Flash
+      b1Flashcard: b1Flash,
+      b2Flashcard: b2Flash
     }));
   }, []);
 
-  const totalLearned = stats.a2Learned + stats.b1Learned;
-  const totalWords = stats.a2Total + stats.b1Total;
+  const totalLearned = stats.a2Learned + stats.b1Learned + stats.b2Learned;
+  const totalWords = stats.a2Total + stats.b1Total + stats.b2Total;
   const totalPercentage = Math.round((totalLearned / totalWords) * 100) || 0;
   
   const a2Percentage = Math.round((stats.a2Learned / stats.a2Total) * 100) || 0;
   const b1Percentage = Math.round((stats.b1Learned / stats.b1Total) * 100) || 0;
+  const b2Percentage = Math.round((stats.b2Learned / stats.b2Total) * 100) || 0;
 
   return (
     <motion.div 
@@ -68,7 +76,7 @@ const Dashboard = ({ setActiveTab }) => {
       </div>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
         <StatCard 
           icon={<BookOpen className="text-indigo-500" />} 
           title="Tổng từ học" 
@@ -86,12 +94,20 @@ const Dashboard = ({ setActiveTab }) => {
           delay={0.2}
         />
         <StatCard 
+          icon={<Star className="text-emerald-500" />} 
+          title="Từ trình độ B2" 
+          value={stats.b2Learned} 
+          subtitle={`${b2Percentage}% hoàn thành`}
+          color="bg-emerald-50"
+          delay={0.3}
+        />
+        <StatCard 
           icon={<Star className="text-purple-500" />} 
           title="Từ trình độ A2" 
           value={stats.a2Learned} 
           subtitle={`${a2Percentage}% hoàn thành`}
           color="bg-purple-50"
-          delay={0.3}
+          delay={0.4}
         />
         <StatCard 
           icon={<TrendingUp className="text-rose-500" />} 
@@ -99,7 +115,7 @@ const Dashboard = ({ setActiveTab }) => {
           value="~15" 
           subtitle="từ mới / tuần"
           color="bg-rose-50"
-          delay={0.4}
+          delay={0.5}
         />
       </div>
 
@@ -158,11 +174,30 @@ const Dashboard = ({ setActiveTab }) => {
                 </div>
                 <p className="text-xs font-bold text-slate-400 italic">Học {stats.b1Learned} / {stats.b1Total} từ vựng cấp độ B1</p>
               </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <span className="text-sm font-black uppercase tracking-wider text-emerald-600">B2 Vocabulary</span>
+                    <h3 className="text-lg font-bold">Chinh phục thành thạo</h3>
+                  </div>
+                  <span className="text-3xl font-black text-slate-900 leading-none">{b2Percentage}%</span>
+                </div>
+                <div className="h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${b2Percentage}%` }}
+                    transition={{ duration: 1, delay: 1.1 }}
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full"
+                  />
+                </div>
+                <p className="text-xs font-bold text-slate-400 italic">Học {stats.b2Learned} / {stats.b2Total} từ vựng cấp độ B2</p>
+              </div>
             </div>
           </motion.div>
 
           {/* Quick Resume */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-6">
             <ResumeCard 
               level="A2" 
               progress={stats.a2Flashcard} 
@@ -178,6 +213,14 @@ const Dashboard = ({ setActiveTab }) => {
               color="bg-teal-600"
               onClick={() => setActiveTab('b1-vocab')}
               delay={1.1}
+            />
+            <ResumeCard 
+              level="B2" 
+              progress={stats.b2Flashcard} 
+              total={stats.b2Total}
+              color="bg-emerald-600"
+              onClick={() => setActiveTab('b2-vocab')}
+              delay={1.2}
             />
           </div>
         </div>

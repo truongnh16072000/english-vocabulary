@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { playSound } from '../utils/sounds';
-import { motion } from 'framer-motion';
 import { 
-  Search, Volume2, BookOpen, Brain, CheckCircle, 
-  ChevronLeft, ChevronRight, RotateCcw, Play, 
+  Search, Volume2, BookOpen,
+  ChevronLeft, ChevronRight, Play, 
   Tags, LayoutGrid, Heart, Plane, GraduationCap, 
-  Leaf, Music, Home, Smile, Filter, Sparkles, X, Send,
-  Eye, EyeOff, Trophy, Mic, MicOff, AlertCircle
+  Leaf, Music, Home, Smile, Filter, Sparkles,
+  Eye, EyeOff, Mic, CheckCircle
 } from 'lucide-react';
-import { callGeminiAPI } from '../utils/gemini';
+import { callAI } from '../utils/openai';
+import { parseB1B2, topicLabels, topicColors } from '../utils/vocabularyData';
 import PronunciationModal from './common/PronunciationModal';
 import AiAssistantModal from './common/AiAssistantModal';
 
@@ -933,27 +932,14 @@ youth|/juːθ/|n|tuổi trẻ|G|In my youth.|Trong thời trẻ của tôi.|youn
 zone|/zəʊn/|n|khu vực|G|A danger zone.|Một khu vực nguy hiểm.|area, region|comfort zone, time zone
 zoo|/zuː/|n|sở thú|E|Visit the zoo.|Thăm sở thú.|animal park|go to the zoo, zoo keeper`.trim();
 
-// Trình giải nén: Tách chuỗi khổng lồ thành mảng đối tượng
-const fullVocabulary = rawString.split('\n').filter(Boolean).map(row => {
-  const [word, ipa, pos, meaning, tCode, example, translation, synonyms, collocations] = row.split('|');
-  const topicMap = {
-    'T': 'Travel', 'H': 'Health', 'W': 'Work & Edu', 'N': 'Nature',
-    'E': 'Leisure', 'L': 'Life', 'F': 'Feelings', 'G': 'General'
-  };
-  return { 
-    word, ipa, pos, meaning, 
-    topic: topicMap[tCode] || 'General', 
-    example, translation,
-    synonyms: synonyms || 'Đang cập nhật...',
-    collocations: collocations || 'Đang cập nhật...'
-  };
-}).sort((a, b) => a.word.localeCompare(b.word));
+// Parse vocabulary using shared utility
+const fullVocabulary = parseB1B2(rawString);
 
-// --- Sử dụng tiện ích GEMINI API tập trung ---
-// callGeminiAPI đã được import từ src/utils/gemini.js.
+// Export for use by ExaminePage
+export { fullVocabulary as b2Vocabulary };
 
 const B2Vocabulary = () => {
-  const [activeTab, setActiveTab] = useState('list');
+  const [activeTab, setActiveTab] = useState('flashcard');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTopic, setFilterTopic] = useState('All');
   const [currentFlashcard, setCurrentFlashcard] = useState(() => {
@@ -965,41 +951,6 @@ const B2Vocabulary = () => {
     localStorage.setItem('b2_flashcard_progress', currentFlashcard);
   }, [currentFlashcard]);
   const [isFlipped, setIsFlipped] = useState(false);
-  
-  // Quiz Persistence
-  const [quizSize, setQuizSize] = useState(() => {
-    const saved = localStorage.getItem('b2_quiz_size');
-    return saved ? parseInt(saved, 10) : 10;
-  });
-  const [quizActive, setQuizActive] = useState(() => {
-    return localStorage.getItem('b2_quiz_active') === 'true';
-  });
-  const [quizPool, setQuizPool] = useState(() => {
-    const saved = localStorage.getItem('b2_quiz_pool');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [quizIndex, setQuizIndex] = useState(() => {
-    const saved = localStorage.getItem('b2_quiz_index');
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [quizScore, setQuizScore] = useState(() => {
-    const saved = localStorage.getItem('b2_quiz_score');
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [quizFinished, setQuizFinished] = useState(() => {
-    return localStorage.getItem('b2_quiz_finished') === 'true';
-  });
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [quizOptions, setQuizOptions] = useState([]);
-
-  useEffect(() => {
-    localStorage.setItem('b2_quiz_size', quizSize);
-    localStorage.setItem('b2_quiz_active', quizActive);
-    localStorage.setItem('b2_quiz_pool', JSON.stringify(quizPool));
-    localStorage.setItem('b2_quiz_index', quizIndex);
-    localStorage.setItem('b2_quiz_score', quizScore);
-    localStorage.setItem('b2_quiz_finished', quizFinished);
-  }, [quizSize, quizActive, quizPool, quizIndex, quizScore, quizFinished]);
 
   // AI Modal States
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -1009,8 +960,7 @@ const B2Vocabulary = () => {
   const [userSentence, setUserSentence] = useState('');
   const [isPronounceModalOpen, setIsPronounceModalOpen] = useState(false);
 
-  // Random Flashcards State
-  const [shuffledFlashcards, setShuffledFlashcards] = useState([]);
+
 
 
 
@@ -1064,72 +1014,11 @@ const B2Vocabulary = () => {
     });
   }, [searchQuery, filterTopic, learnedWords, showLearned]);
 
-  useEffect(() => {
-    if (activeTab === 'flashcard' && filteredVocab.length > 0) {
-      const shuffled = [...filteredVocab].sort(() => Math.random() - 0.5);
-      setShuffledFlashcards(shuffled);
-      setCurrentFlashcard(0);
-    }
-  }, [activeTab, filterTopic, filteredVocab]);
 
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
     window.speechSynthesis.speak(utterance);
-  };
-
-  const generateOptions = (correctAnswer) => {
-    const pool = fullVocabulary.filter(item => item.meaning !== correctAnswer);
-    const others = pool
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3)
-      .map(item => item.meaning);
-    return [...others, correctAnswer].sort(() => 0.5 - Math.random());
-  };
-
-  useEffect(() => {
-    if (activeTab === 'quiz' && quizActive && !quizFinished && quizPool.length > 0) {
-      if (quizIndex < quizPool.length) {
-        setQuizOptions(generateOptions(quizPool[quizIndex].meaning));
-      }
-    }
-  }, [quizIndex, activeTab, quizFinished, quizPool, quizActive]);
-
-  const startNewQuiz = (size) => {
-    const count = size === 'all' ? filteredVocab.length : Math.min(size, filteredVocab.length);
-    const shuffled = [...filteredVocab].sort(() => 0.5 - Math.random());
-    const pool = shuffled.slice(0, count);
-    
-    setQuizPool(pool);
-    setQuizIndex(0);
-    setQuizScore(0);
-    setQuizSize(size);
-    setQuizActive(true);
-    setQuizFinished(false);
-    setSelectedAnswer(null);
-    playSound('success');
-  };
-
-  const handleQuizAnswer = (answer) => {
-    if (selectedAnswer !== null) return;
-    setSelectedAnswer(answer);
-    if (answer === quizPool[quizIndex].meaning) {
-      setQuizScore(quizScore + 1);
-      playSound('correct');
-    } else {
-      playSound('wrong');
-    }
-    
-    setTimeout(() => {
-      if (quizIndex < quizPool.length - 1) {
-        setQuizIndex(quizIndex + 1);
-        setSelectedAnswer(null);
-        playSound('select');
-      } else {
-        setQuizFinished(true);
-        playSound('success');
-      }
-    }, 1200);
   };
 
   // Đảm bảo chỉ số flashcard luôn nằm trong phạm vi hợp lệ
@@ -1156,7 +1045,7 @@ const B2Vocabulary = () => {
   const handleExplainWord = async (wordObj) => {
     setIsAiLoading(true);
     const prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B2. Trình bày ngắn gọn, dễ hiểu.`;
-    const response = await callGeminiAPI(prompt);
+    const response = await callAI(prompt);
     setAiResponse(response);
     setIsAiLoading(false);
   };
@@ -1165,28 +1054,13 @@ const B2Vocabulary = () => {
     if (!userSentence.trim()) return;
     setIsAiLoading(true);
     const prompt = `Tôi đang học từ tiếng Anh "${aiCurrentWord.word}". Đánh giá câu sau của tôi: "${userSentence}". Hãy chỉ ra lỗi ngữ pháp hoặc cách dùng từ (nếu có), giải thích lý do, và đề xuất 1-2 cách viết tự nhiên hơn. Trình bày ngắn gọn, thân thiện.`;
-    const response = await callGeminiAPI(prompt);
+    const response = await callAI(prompt);
     setAiResponse(response);
     setIsAiLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-10">
-      {/* Inner Tabs for Vocabulary App - Aligned with A2 style */}
-      <div className="max-w-6xl mx-auto px-2 sm:px-4 py-4 border-b border-slate-100 mb-6 font-sans">
-        <nav className="flex bg-slate-100 p-1 rounded-xl sm:rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
-          <button onClick={() => { setActiveTab('list'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-500'}`}>
-            <LayoutGrid className="w-4 h-4" /> <span className="inline">Danh sách</span>
-          </button>
-          <button onClick={() => { setActiveTab('flashcard'); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'flashcard' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-500'}`}>
-            <Brain className="w-4 h-4" /> <span className="inline">Thẻ nhớ</span>
-          </button>
-          <button onClick={() => { setActiveTab('quiz'); setQuizIndex(0); setQuizFinished(false); setQuizScore(0); playSound('select'); }} className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'quiz' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-500'}`}>
-            <CheckCircle className="w-4 h-4" /> <span className="inline">Kiểm tra</span>
-          </button>
-        </nav>
-      </div>
-
 
       <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-10">
         <div className="mb-8 space-y-6">
@@ -1196,12 +1070,12 @@ const B2Vocabulary = () => {
               <input 
                 type="text" placeholder="Tra cứu từ vựng, nghĩa, hoặc từ đồng nghĩa..." 
                 className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 outline-none shadow-sm transition-all"
-                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentFlashcard(0); }}
               />
             </div>
 
             <button 
-              onClick={() => setShowLearned(!showLearned)}
+              onClick={() => { setShowLearned(!showLearned); setCurrentFlashcard(0); }}
               className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all border ${showLearned ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
             >
               {showLearned ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
@@ -1215,13 +1089,11 @@ const B2Vocabulary = () => {
               <button 
                 key={topic} 
                 onClick={() => {
-                  setFilterTopic(topic); 
-                  setQuizActive(false); // Reset quiz when filter changes
-                  setQuizIndex(0); 
-                  setQuizFinished(false);
+                  setFilterTopic(topic);
+                  setCurrentFlashcard(0);
                   playSound('select');
                 }}
-                className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${filterTopic === topic ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-black flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${filterTopic === topic ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
               >
                 {topicConfig[topic].icon}
                 {topicConfig[topic].label}
@@ -1230,84 +1102,10 @@ const B2Vocabulary = () => {
           </div>
         </div>
 
-        {activeTab === 'list' && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredVocab.map((item, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all group animate-fade-in flex flex-col h-full relative overflow-hidden">
-                <div className="flex justify-between items-start mb-4 relative z-10">
-                  <div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md text-white mb-2 inline-block ${topicConfig[item.topic].color}`}>
-                      {topicConfig[item.topic].label}
-                    </span>
-                    <h3 className="text-xl font-black text-slate-800 capitalize group-hover:text-emerald-600 transition-colors break-words">{item.word}</h3>
-                    <p className="text-slate-400 text-sm font-medium mt-1">{item.ipa} • <span className="text-emerald-500 italic">{item.pos}</span></p>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <button 
-                      onClick={() => speak(item.word)} 
-                      className="p-3 rounded-full bg-slate-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition shadow-sm active:scale-90"
-                      title="Nghe phát âm"
-                    >
-                      <Volume2 className="w-5 h-5" />
-                    </button>
-                    <button 
-                      onClick={() => handleOpenPronounce(item)} 
-                      className="p-3 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition shadow-sm active:scale-90"
-                      title="Luyện phát âm"
-                    >
-                      <Mic className="w-5 h-5" />
-                    </button>
-                    <button 
-                      onClick={() => toggleLearned(item.word)} 
-                      className={`p-3 rounded-full transition shadow-sm active:scale-90 ${learnedWords.includes(item.word) ? 'bg-emerald-500 text-white' : 'bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}
-                      title={learnedWords.includes(item.word) ? "Đã học" : "Đánh dấu đã học"}
-                    >
-                      <CheckCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-                
-                <p className="text-slate-800 font-bold text-base mb-4 relative z-10">💡 {item.meaning}</p>
-                
-                <div className="bg-emerald-50/50 p-4 rounded-2xl border-l-4 border-emerald-400 flex-grow flex flex-col relative z-10">
-                  <p className="text-sm text-slate-600 mb-2 leading-relaxed italic">"{item.example}"</p>
-                  <p className="text-[11px] text-slate-400 font-bold uppercase mb-4">{item.translation}</p>
-                  
-                  <div className="mt-auto pt-3 border-t border-emerald-100/50 flex flex-col gap-1.5">
-                    <div className="text-[11px]">
-                      <span className="font-bold text-emerald-700 mr-1">🔗 Đồng nghĩa:</span>
-                      <span className="text-slate-600">{item.synonyms}</span>
-                    </div>
-                    <div className="text-[11px]">
-                      <span className="font-bold text-emerald-700 mr-1">📝 Cụm từ hay:</span>
-                      <span className="text-slate-600">{item.collocations}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => handleOpenAiModal(item)}
-                  className="absolute bottom-4 right-4 bg-purple-100 text-purple-600 hover:bg-purple-600 hover:text-white p-2 rounded-xl transition-all shadow-sm flex items-center gap-1 text-[10px] font-bold z-20 group-hover:scale-105"
-                >
-                  <Sparkles className="w-3 h-3" /> AI
-                </button>
-              </div>
-            ))}
-            {filteredVocab.length === 0 && (
-              <div className="col-span-full py-32 text-center">
-                <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-emerald-300" />
-                </div>
-                <p className="text-slate-400 font-bold italic text-lg">Hổng thấy từ nào khớp hết trơn...</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'flashcard' && shuffledFlashcards.length > 0 && (
+        {filteredVocab.length > 0 && (
           <div className="flex flex-col items-center py-12 space-y-10 relative">
             <div className="bg-emerald-100 text-emerald-700 px-6 py-2 rounded-full text-sm font-black shadow-sm ring-4 ring-white">
-              TỪ {currentFlashcard + 1} TRÊN {shuffledFlashcards.length}
+              TỪ {currentFlashcard + 1} TRÊN {filteredVocab.length}
             </div>
 
             <div 
@@ -1315,33 +1113,31 @@ const B2Vocabulary = () => {
               onClick={() => { setIsFlipped(!isFlipped); playSound('click'); }}
               style={{ perspective: '1200px' }}
             >
-              {/* MẶT TRƯỚC */}
               <div className={`absolute inset-0 bg-white rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[shuffledFlashcards[currentFlashcard].topic].color}`}>
-                   {topicConfig[shuffledFlashcards[currentFlashcard].topic].icon}
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
+                   {topicConfig[filteredVocab[currentFlashcard].topic].icon}
                 </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center break-words px-4 leading-tight">{shuffledFlashcards[currentFlashcard].word}</h2>
-                <p className="text-slate-400 text-2xl font-medium tracking-wide">{shuffledFlashcards[currentFlashcard].ipa}</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center break-words px-4 leading-tight">{filteredVocab[currentFlashcard].word}</h2>
+                <p className="text-slate-400 text-2xl font-medium tracking-wide">{filteredVocab[currentFlashcard].ipa}</p>
                 <div className="mt-16 flex items-center gap-3 text-slate-300 text-xs font-black uppercase tracking-[0.2em]">
                   <Play className="w-4 h-4" /> Chạm để lật thẻ
                 </div>
               </div>
 
-              {/* MẶT SAU */}
               <div 
                 className={`absolute inset-0 bg-emerald-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
                 style={{ transform: 'rotateY(180deg)' }}
               >
-                <span className="text-emerald-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[shuffledFlashcards[currentFlashcard].topic].label}</span>
-                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-emerald-300 underline-offset-8">{shuffledFlashcards[currentFlashcard].meaning}</h3>
+                <span className="text-emerald-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
+                <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-emerald-300 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
                 
                 <div className="w-full flex flex-col gap-1.5 mb-4 bg-emerald-700/50 p-4 rounded-2xl text-left border border-emerald-500/30">
-                  <p className="text-[13px]"><span className="font-bold text-emerald-200">🔗 Đồng nghĩa:</span> {shuffledFlashcards[currentFlashcard].synonyms}</p>
-                  <p className="text-[13px]"><span className="font-bold text-emerald-200">📝 Cụm từ hay:</span> {shuffledFlashcards[currentFlashcard].collocations}</p>
+                  <p className="text-[13px]"><span className="font-bold text-emerald-200">🔗 Đồng nghĩa:</span> {filteredVocab[currentFlashcard].synonyms}</p>
+                  <p className="text-[13px]"><span className="font-bold text-emerald-200">📝 Cụm từ hay:</span> {filteredVocab[currentFlashcard].collocations}</p>
                 </div>
 
-                <p className="italic text-emerald-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{shuffledFlashcards[currentFlashcard].example}"</p>
-                <p className="text-[11px] text-emerald-200 text-center font-bold tracking-wider uppercase opacity-90">{shuffledFlashcards[currentFlashcard].translation}</p>
+                <p className="italic text-emerald-50 text-[15px] text-center mb-2 font-medium px-2 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
+                <p className="text-[11px] text-emerald-200 text-center font-bold tracking-wider uppercase opacity-90">{filteredVocab[currentFlashcard].translation}</p>
               </div>
             </div>
 
@@ -1354,143 +1150,33 @@ const B2Vocabulary = () => {
                 <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button 
-                onClick={() => speak(shuffledFlashcards[currentFlashcard].word)} 
+                onClick={() => speak(filteredVocab[currentFlashcard].word)} 
                 className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-emerald-500 hover:bg-emerald-600 hover:text-white transition-all shadow-lg active:scale-95"
                 title="Nghe"
               >
                 <Volume2 className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button 
-                onClick={() => handleOpenPronounce(shuffledFlashcards[currentFlashcard])}
-                className={`px-6 sm:px-8 py-4 sm:py-5 rounded-full font-black shadow-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50`}
+                onClick={() => handleOpenPronounce(filteredVocab[currentFlashcard])}
+                className="px-6 sm:px-8 py-4 sm:py-5 rounded-full font-black shadow-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50"
               >
                 <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> PHÁT ÂM
               </button>
               <button 
-                onClick={() => handleOpenAiModal(shuffledFlashcards[currentFlashcard])}
+                onClick={() => handleOpenAiModal(filteredVocab[currentFlashcard])}
                 className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
                 title="Hỏi AI"
               >
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button 
-                disabled={currentFlashcard === shuffledFlashcards.length - 1} 
+                disabled={currentFlashcard === filteredVocab.length - 1} 
                 onClick={() => { setCurrentFlashcard(prev => prev + 1); setIsFlipped(false); playSound('click'); }} 
                 className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
                 <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
             </div>
-          </div>
-        )}
-
-        {activeTab === 'quiz' && filteredVocab.length > 0 && (
-          <div className="max-w-2xl mx-auto pt-6 px-4">
-            {!quizActive ? (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white p-6 sm:p-12 rounded-[40px] sm:rounded-[50px] shadow-2xl border border-slate-100 text-center"
-              >
-                <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
-                  <Trophy className="w-12 h-12" />
-                </div>
-                <h2 className="text-3xl font-black text-slate-800 mb-2">Thử thách trình độ B2</h2>
-                <p className="text-slate-400 font-medium mb-10 italic">Chọn số lượng từ bạn muốn kiểm tra</p>
-                
-                <div className="grid grid-cols-2 gap-4 mb-10">
-                  {[10, 20, 50, 'all'].map(size => (
-                    <button 
-                      key={size}
-                      onClick={() => startNewQuiz(size)}
-                      className="p-5 rounded-3xl border-2 border-slate-100 hover:border-emerald-400 hover:bg-emerald-50 transition-all font-black text-slate-700 active:scale-95 group"
-                    >
-                      <div className="text-2xl group-hover:text-emerald-600">{size === 'all' ? filteredVocab.length : size}</div>
-                      <div className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-emerald-400">{size === 'all' ? 'Tất cả từ' : 'Từ vựng'}</div>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Dữ liệu lấy từ danh sách đang lọc ({topicConfig[filterTopic].label})</p>
-              </motion.div>
-            ) : !quizFinished ? (
-              <div className="bg-white p-6 sm:p-10 rounded-[30px] sm:rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
-                <div className="flex justify-between items-center mb-12">
-                  <div className="flex flex-col text-left">
-                    <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">TIẾN ĐỘ</span>
-                    <span className="text-slate-800 font-black text-lg">{quizIndex + 1} / {quizPool.length}</span>
-                  </div>
-                  <div className="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-2xl font-black text-sm shadow-sm border border-emerald-100 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" /> ĐÚNG: {quizScore}
-                  </div>
-                </div>
-
-                <div className="text-center mb-12">
-                  <p className="text-slate-400 text-sm font-bold mb-4 uppercase tracking-widest">Từ này nghĩa là gì?</p>
-                  <h3 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-800 capitalize mb-6 sm:mb-8 tracking-tighter break-words px-2">{quizPool[quizIndex]?.word}</h3>
-                  <button 
-                    onClick={() => speak(quizPool[quizIndex]?.word)} 
-                    className="p-4 bg-emerald-50 rounded-full text-emerald-500 hover:text-emerald-700 transition-all hover:scale-110 active:scale-90"
-                  >
-                    <Volume2 className="w-10 h-10" />
-                  </button>
-                </div>
-
-                <div className="grid gap-4">
-                  {quizOptions.map((option, idx) => (
-                    <button
-                      key={idx} 
-                      onClick={() => !selectedAnswer && handleQuizAnswer(option)}
-                      className={`w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-left border-2 sm:border-4 transition-all font-black text-base sm:text-lg shadow-sm flex justify-between items-center group ${
-                        selectedAnswer === option 
-                          ? (option === quizPool[quizIndex]?.meaning ? 'bg-emerald-50 border-emerald-500 text-emerald-700 scale-[1.03]' : 'bg-rose-50 border-rose-500 text-rose-700 shake') 
-                          : selectedAnswer && option === quizPool[quizIndex]?.meaning 
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
-                          : 'bg-white border-slate-100 hover:border-emerald-400 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="flex-1 pr-2 sm:pr-4 leading-tight">{option}</span>
-                      {selectedAnswer === option && (
-                        option === quizPool[quizIndex]?.meaning ? <CheckCircle className="w-6 h-6" /> : <RotateCcw className="w-6 h-6" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white p-8 sm:p-16 rounded-[40px] sm:rounded-[50px] shadow-2xl text-center border border-emerald-50 animate-zoom-in">
-                <div className="w-28 h-28 bg-emerald-100 text-emerald-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
-                  <Brain className="w-14 h-14" />
-                </div>
-                <h2 className="text-4xl font-black text-slate-800 mb-4 uppercase">KẾT QUẢ</h2>
-                <p className="text-slate-500 font-bold mb-12 italic text-lg">Bạn đã chinh phục được {quizScore} trên {quizPool.length} thử thách!</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-                   <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                     <div className="text-3xl font-black text-emerald-600">{Math.round((quizScore / quizPool.length) * 100)}%</div>
-                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Độ chính xác</div>
-                   </div>
-                   <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                     <div className="text-3xl font-black text-slate-800">{quizScore}</div>
-                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Câu trả lời đúng</div>
-                   </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                  <button 
-                    onClick={() => { setQuizActive(false); playSound('click'); }}
-                    className="flex-1 py-4 sm:py-6 px-10 rounded-[25px] sm:rounded-[35px] bg-slate-100 text-slate-600 font-black text-xs sm:text-sm hover:bg-slate-200 transition-all uppercase tracking-widest active:scale-95"
-                  >
-                    Đóng
-                  </button>
-                  <button 
-                    onClick={() => startNewQuiz(quizSize)}
-                    className="flex-1 py-4 sm:py-6 px-10 rounded-[25px] sm:rounded-[35px] bg-emerald-600 text-white font-black text-xs sm:text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 uppercase tracking-widest active:scale-95"
-                  >
-                    Thử lại
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </main>
@@ -1518,7 +1204,7 @@ const B2Vocabulary = () => {
       <footer className="max-w-6xl mx-auto px-6 py-10 text-center">
         <div className="flex items-center justify-center gap-2 text-slate-300 font-black tracking-widest uppercase text-xs">
           <BookOpen className="w-4 h-4" />
-          B2 Level Vocabulary • Có AI Gemini Hỗ Trợ
+          B2 Level Vocabulary • AI Assistant
         </div>
       </footer>
 
