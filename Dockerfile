@@ -11,8 +11,6 @@ RUN npm ci
 
 # Copy source code and build
 COPY . .
-ARG VITE_OPENAI_API_KEY
-ENV VITE_OPENAI_API_KEY=$VITE_OPENAI_API_KEY
 RUN npm run build
 
 # ================================
