@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, BookOpen, LayoutDashboard, Settings, 
   Search, LogOut, ChevronRight, ChevronLeft, GraduationCap,
-  Sparkles, Layers, BookMarked, Sidebar as SidebarIcon, Trophy
+  Sparkles, Layers, BookMarked, Sidebar as SidebarIcon, Trophy, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playSound } from '../utils/sounds';
@@ -23,6 +23,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'a2-vocab', label: 'A2 Flashcards', icon: <BookOpen className="w-5 h-5" />, color: 'text-indigo-500' },
     { id: 'b1-vocab', label: 'B1 Flashcards', icon: <Sparkles className="w-5 h-5" />, color: 'text-purple-500' },
     { id: 'b2-vocab', label: 'B2 Flashcards', icon: <BookMarked className="w-5 h-5" />, color: 'text-emerald-500' },
+    { id: 'favorites', label: 'Yêu Thích', icon: <Heart className="w-5 h-5" />, color: 'text-rose-500' },
     { id: 'examine', label: 'Kiểm Tra', icon: <Trophy className="w-5 h-5" />, color: 'text-rose-500' },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, color: 'text-slate-500' },
   ];

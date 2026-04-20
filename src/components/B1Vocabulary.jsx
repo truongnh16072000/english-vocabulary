@@ -7,10 +7,11 @@ import {
   Leaf, Music, Home, Smile, Filter, Sparkles,
   Eye, EyeOff, Mic, CheckCircle
 } from 'lucide-react';
-import { callAI } from '../utils/openai';
+import { callAI, callAIStream } from '../utils/openai';
 import { parseB1B2, topicLabels, topicColors } from '../utils/vocabularyData';
 import PronunciationModal from './common/PronunciationModal';
 import AiAssistantModal from './common/AiAssistantModal';
+import FilterModal from './common/FilterModal';
 
 /* * KỸ THUẬT SIÊU NÉN DỮ LIỆU (STRING COMPRESSION) CHO B1
  * Định dạng: word|ipa|pos|meaning|topic_code|example|translation|synonyms|collocations
@@ -963,6 +964,7 @@ const B1Vocabulary = () => {
   const [aiResponse, setAiResponse] = useState('');
   const [userSentence, setUserSentence] = useState('');
   const [isPronounceModalOpen, setIsPronounceModalOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   // Trạng thái từ đã học
   const [showLearned, setShowLearned] = useState(false);
@@ -978,6 +980,31 @@ const B1Vocabulary = () => {
   const toggleLearned = (word) => {
     setLearnedWords(prev => {
       if (prev.includes(word)) {
+        playSound('click');
+        return prev.filter(w => w !== word);
+      } else {
+        playSound('success');
+        return [...prev, word];
+      }
+    });
+  };
+
+  // Trạng thái từ yêu thích
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [favoriteWords, setFavoriteWords] = useState(() => {
+    const saved = localStorage.getItem('b1_favorite_words');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('b1_favorite_words', JSON.stringify(favoriteWords));
+  }, [favoriteWords]);
+
+  const toggleFavorite = (e, word) => {
+    e.stopPropagation();
+    setFavoriteWords(prev => {
+      const isRemoving = prev.includes(word);
+      if (isRemoving) {
         playSound('click');
         return prev.filter(w => w !== word);
       } else {
@@ -1009,9 +1036,10 @@ const B1Vocabulary = () => {
                             item.meaning.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTopic = filterTopic === 'All' || item.topic === filterTopic;
       const matchesLearned = showLearned || !learnedWords.includes(item.word);
-      return matchesSearch && matchesTopic && matchesLearned;
+      const matchesFavorite = !showFavorites || favoriteWords.includes(item.word);
+      return matchesSearch && matchesTopic && matchesLearned && matchesFavorite;
     });
-  }, [searchQuery, filterTopic, learnedWords, showLearned]);
+  }, [searchQuery, filterTopic, learnedWords, showLearned, showFavorites, favoriteWords]);
 
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -1027,7 +1055,6 @@ const B1Vocabulary = () => {
     setIsAiModalOpen(true);
     setAiResponse('');
     setUserSentence('');
-    handleExplainWord(wordObj);
   };
 
   const handleOpenPronounce = (wordObj) => {
@@ -1035,21 +1062,49 @@ const B1Vocabulary = () => {
     setIsPronounceModalOpen(true);
   };
 
-  const handleExplainWord = async (wordObj) => {
+  const handleExplainWord = async (wordObj, lang = 'vi') => {
+    const cacheKey = `ai_explain_b1_${wordObj.word}_${lang}`;
+    const cached = localStorage.getItem(cacheKey);
+
+    if (cached) {
+      setAiResponse(cached);
+      return;
+    }
+
     setIsAiLoading(true);
-    const prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B1. Trình bày ngắn gọn, dễ hiểu.`;
-    const response = await callAI(prompt);
-    setAiResponse(response);
-    setIsAiLoading(false);
+    setAiResponse('');
+    
+    let prompt;
+    if (lang === 'vi') {
+      prompt = `Hãy giải thích chi tiết cách sử dụng từ tiếng Anh "${wordObj.word}" (từ loại: ${wordObj.pos}, nghĩa: ${wordObj.meaning}). Cung cấp 2 ví dụ thực tế kèm lời dịch, và chỉ ra các sắc thái nghĩa hoặc lỗi sai thường gặp khi dùng từ này ở trình độ B1. Trình bày ngắn gọn, dễ hiểu.`;
+    } else {
+      prompt = `Explain the usage of the English word "${wordObj.word}" (pos: ${wordObj.pos}, meaning: ${wordObj.meaning}) in clear English for a B1 learner. Provide 2 realistic examples with transitions into Vietnamese, and highlight common usage patterns or mistakes at the B1 level. Respond ONLY in English for the explanation parts. Keep it concise and helpful.`;
+    }
+    
+    let fullResponse = '';
+    await callAIStream(prompt, (chunk) => {
+      setIsAiLoading(false);
+      fullResponse += chunk;
+      setAiResponse(fullResponse);
+    });
+
+    if (fullResponse.trim()) {
+      localStorage.setItem(cacheKey, fullResponse);
+    }
   };
 
   const handleCheckSentence = async () => {
     if (!userSentence.trim()) return;
     setIsAiLoading(true);
+    setAiResponse('');
     const prompt = `Tôi đang học từ tiếng Anh "${aiCurrentWord.word}". Đánh giá câu sau của tôi: "${userSentence}". Hãy chỉ ra lỗi ngữ pháp hoặc cách dùng từ (nếu có), giải thích lý do, và đề xuất 1-2 cách viết tự nhiên hơn. Trình bày ngắn gọn, thân thiện.`;
-    const response = await callAI(prompt);
-    setAiResponse(response);
-    setIsAiLoading(false);
+    
+    let fullResponse = '';
+    await callAIStream(prompt, (chunk) => {
+      setIsAiLoading(false);
+      fullResponse += chunk;
+      setAiResponse(fullResponse);
+    });
   };
 
   return (
@@ -1057,7 +1112,7 @@ const B1Vocabulary = () => {
 
       <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-10">
         <div className="mb-8 space-y-6">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex gap-4">
             <div className="relative flex-1 group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-teal-500 transition-colors" />
               <input 
@@ -1068,46 +1123,32 @@ const B1Vocabulary = () => {
             </div>
 
             <button 
-              onClick={() => { setShowLearned(!showLearned); setCurrentFlashcard(0); }}
-              className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black transition-all border text-xs sm:text-sm ${showLearned ? 'bg-teal-600 text-white border-teal-600 shadow-teal-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+              onClick={() => setIsFilterModalOpen(true)}
+              className="px-5 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
             >
-              {showLearned ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-              {showLearned ? 'ĐANG HIỂN THỊ TỪ ĐÃ HỌC' : 'ĐANG ẨN TỪ ĐÃ HỌC'}
+              <Filter className="w-5 h-5" /> <span className="hidden sm:inline">Bộ lọc</span>
             </button>
-          </div>
-
-          <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth">
-            <Filter className="w-5 h-5 text-slate-400 flex-shrink-0" />
-            {topics.map(topic => (
-              <button 
-                key={topic} 
-                onClick={() => {
-                  setFilterTopic(topic);
-                  setCurrentFlashcard(0);
-                  playSound('select');
-                }}
-                className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-black flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${filterTopic === topic ? 'bg-teal-600 text-white border-teal-600 shadow-teal-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-              >
-                {topicConfig[topic].icon}
-                {topicConfig[topic].label}
-              </button>
-            ))}
           </div>
         </div>
 
         {filteredVocab.length > 0 && (
-          <div className="flex flex-col items-center py-12 space-y-10 relative">
-            <div className="bg-teal-100 text-teal-700 px-6 py-2 rounded-full text-sm font-black shadow-sm ring-4 ring-white">
-              TỪ {currentFlashcard + 1} TRÊN {filteredVocab.length}
-            </div>
-
+          <div className="flex flex-col items-center py-4 md:py-6 gap-6 md:gap-8">
             <div 
-              className={`relative w-full max-w-md h-[450px] cursor-pointer transition-all duration-700 preserve-3d group ${isFlipped ? 'rotate-y-180' : ''}`}
+              className={`relative w-full max-w-md h-[min(450px,60vh)] cursor-pointer transition-all duration-700 preserve-3d group ${isFlipped ? 'rotate-y-180' : ''}`}
               onClick={() => { setIsFlipped(!isFlipped); playSound('click'); }}
               style={{ perspective: '1200px' }}
             >
               {/* MẶT TRƯỚC */}
-              <div className={`absolute inset-0 bg-white rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
+              <div className={`absolute inset-0 bg-white rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 md:p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
+                <div className="absolute top-5 left-5 md:top-6 md:left-6 bg-slate-100 text-slate-400 px-3 py-1.5 rounded-xl text-[10px] md:text-xs font-black tracking-widest uppercase">
+                  {currentFlashcard + 1} / {filteredVocab.length}
+                </div>
+                <button 
+                  onClick={(e) => toggleFavorite(e, filteredVocab[currentFlashcard].word)}
+                  className="absolute top-5 right-5 md:top-6 md:right-6 bg-slate-100 p-2.5 rounded-xl transition-all hover:scale-110 active:scale-90 shadow-sm"
+                >
+                  <Heart className={`w-5 h-5 ${favoriteWords.includes(filteredVocab[currentFlashcard].word) ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
+                </button>
                 <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
                    {topicConfig[filteredVocab[currentFlashcard].topic].icon}
                 </div>
@@ -1120,9 +1161,18 @@ const B1Vocabulary = () => {
 
               {/* MẶT SAU */}
               <div 
-                className={`absolute inset-0 bg-teal-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 bg-teal-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-6 md:p-8 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
                 style={{ transform: 'rotateY(180deg)' }}
               >
+                <div className="absolute top-5 left-5 md:top-6 md:left-6 bg-white/20 text-white px-3 py-1.5 rounded-xl text-[10px] md:text-xs font-black tracking-widest uppercase">
+                  {currentFlashcard + 1} / {filteredVocab.length}
+                </div>
+                <button 
+                  onClick={(e) => toggleFavorite(e, filteredVocab[currentFlashcard].word)}
+                  className="absolute top-5 right-5 md:top-6 md:right-6 bg-white/20 p-2.5 rounded-xl transition-all hover:scale-110 active:scale-90"
+                >
+                  <Heart className={`w-5 h-5 ${favoriteWords.includes(filteredVocab[currentFlashcard].word) ? 'fill-white text-white' : 'text-white/60'}`} />
+                </button>
                 <span className="text-teal-200 text-xs font-black uppercase mb-2 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
                 <h3 className="text-3xl font-black mb-4 text-center leading-tight underline decoration-teal-300 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
                 
@@ -1136,40 +1186,40 @@ const B1Vocabulary = () => {
               </div>
             </div>
 
-            <div className="flex gap-3 sm:gap-6 items-center flex-wrap justify-center">
+            <div className="flex gap-3 sm:gap-5 items-center flex-wrap justify-center">
               <button 
                 disabled={currentFlashcard === 0} 
                 onClick={() => { setCurrentFlashcard(prev => prev - 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
+                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
-                <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
+                <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
               <button 
                 onClick={() => speak(filteredVocab[currentFlashcard].word)} 
-                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-teal-500 hover:bg-teal-600 hover:text-white transition-all shadow-lg active:scale-95"
+                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-teal-500 hover:bg-teal-600 hover:text-white transition-all shadow-lg active:scale-95"
                 title="Nghe"
               >
-                <Volume2 className="w-6 h-6 sm:w-8 sm:h-8" />
+                <Volume2 className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
               <button 
                 onClick={() => handleOpenPronounce(filteredVocab[currentFlashcard])}
-                className={`px-6 sm:px-8 py-4 sm:py-5 rounded-full font-black shadow-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50`}
+                className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full font-black shadow-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50`}
               >
-                <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> PHÁT ÂM
+                <Mic className="w-5 h-5" /> PHÁT ÂM
               </button>
               <button 
                 onClick={() => handleOpenAiModal(filteredVocab[currentFlashcard])}
-                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
+                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
                 title="Hỏi AI"
               >
-                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8" />
+                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
               <button 
                 disabled={currentFlashcard === filteredVocab.length - 1} 
                 onClick={() => { setCurrentFlashcard(prev => prev + 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-4 sm:p-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
+                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-600 hover:border-teal-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
-                <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
+                <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
             </div>
           </div>
@@ -1193,6 +1243,33 @@ const B1Vocabulary = () => {
         isOpen={isPronounceModalOpen}
         onClose={() => setIsPronounceModalOpen(false)}
         wordObj={aiCurrentWord}
+        themeColor="teal"
+      />
+
+      <FilterModal 
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        topics={topics}
+        topicConfig={topicConfig}
+        filterTopic={filterTopic}
+        onTopicSelect={(topic) => {
+          setFilterTopic(topic);
+          setCurrentFlashcard(0);
+          setIsFilterModalOpen(false);
+          playSound('select');
+        }}
+        showLearned={showLearned}
+        onToggleLearned={() => {
+          setShowLearned(!showLearned);
+          setCurrentFlashcard(0);
+          playSound('click');
+        }}
+        showFavorites={showFavorites}
+        onToggleFavorites={() => {
+          setShowFavorites(!showFavorites);
+          setCurrentFlashcard(0);
+          playSound('click');
+        }}
         themeColor="teal"
       />
 

@@ -8,6 +8,7 @@ const B1Vocabulary = lazy(() => import('./components/B1Vocabulary'));
 const B2Vocabulary = lazy(() => import('./components/B2Vocabulary'));
 const ExaminePage = lazy(() => import('./components/ExaminePage'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
+const FavoriteVocabulary = lazy(() => import('./components/FavoriteVocabulary'));
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -16,10 +17,10 @@ const App = () => {
     <div className="flex h-screen overflow-hidden bg-slate-50 font-sans selection:bg-indigo-100 italic">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="flex-1 min-w-0 overflow-y-auto h-screen p-4 md:p-8 lg:p-12 pt-20 lg:pt-12 transition-all duration-300">
+      <main className="flex-1 min-w-0 overflow-y-auto h-screen transition-all duration-300">
         {/* Header removed as requested */}
 
-        <section className="max-w-7xl mx-auto">
+        <section className="w-full h-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -27,50 +28,61 @@ const App = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="min-h-[70vh]"
+              className="w-full h-full"
             >
               {activeTab === 'a2-vocab' ? (
                 <Suspense fallback={
-                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
+                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
                     <p className="font-bold text-slate-400 italic">Curating your A2 vocabulary...</p>
                   </div>
                 }>
-                  <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
+                  <div className="w-full h-full min-h-screen bg-slate-50">
                      <A2Vocabulary />
                   </div>
                 </Suspense>
               ) : activeTab === 'b1-vocab' ? (
                 <Suspense fallback={
-                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
+                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
                     <p className="font-bold text-slate-400 italic">Curating your B1 vocabulary...</p>
                   </div>
                 }>
-                  <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
+                  <div className="w-full h-full min-h-screen bg-slate-50">
                      <B1Vocabulary />
                   </div>
                 </Suspense>
               ) : activeTab === 'b2-vocab' ? (
                 <Suspense fallback={
-                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
+                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
                     <p className="font-bold text-slate-400 italic">Curating your B2 vocabulary...</p>
                   </div>
                 }>
-                  <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
+                  <div className="w-full h-full min-h-screen bg-slate-50">
                      <B2Vocabulary />
                   </div>
                 </Suspense>
               ) : activeTab === 'examine' ? (
                 <Suspense fallback={
-                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
+                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
                     <p className="font-bold text-slate-400 italic">Loading vocabulary quiz...</p>
                   </div>
                 }>
-                  <div className="glass-card rounded-[40px] shadow-2xl min-h-[500px]">
+                  <div className="w-full h-full min-h-screen bg-slate-50">
                      <ExaminePage />
+                  </div>
+                </Suspense>
+              ) : activeTab === 'favorites' ? (
+                <Suspense fallback={
+                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
+                    <p className="font-bold text-slate-400 italic">Finding your favorite words...</p>
+                  </div>
+                }>
+                  <div className="w-full h-full min-h-screen bg-slate-50">
+                     <FavoriteVocabulary />
                   </div>
                 </Suspense>
               ) : activeTab === 'dashboard' ? (

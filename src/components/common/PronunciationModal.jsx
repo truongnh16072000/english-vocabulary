@@ -9,6 +9,18 @@ const PronunciationModal = ({ isOpen, onClose, wordObj, themeColor = 'rose' }) =
   const [isListening, setIsListening] = useState(false);
   const [pronunciationResult, setPronunciationResult] = useState(null);
 
+  useEffect(() => {
+    if (isOpen) {
+      // Auto start listen with slight delay so animation can kick in
+      const timer = setTimeout(() => {
+        startListening();
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setIsListening(false);
+    }
+  }, [isOpen]);
+
   const startListening = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       alert("Trình duyệt không hỗ trợ nhận diện giọng nói. Vui lòng sử dụng Chrome hoặc Safari mới nhất.");

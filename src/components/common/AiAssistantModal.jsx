@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Send, BookOpen, PenTool, Brain } from 'lucide-react';
+import { X, Sparkles, Send, BookOpen, PenTool, Brain, Volume2, Languages } from 'lucide-react';
 
 const AiAssistantModal = ({ 
   isOpen, 
@@ -16,6 +16,22 @@ const AiAssistantModal = ({
   themeColor = 'indigo' 
 }) => {
   const [aiMode, setAiMode] = useState('practice');
+  const [explanationLang, setExplanationLang] = useState('vi');
+
+  // Automatically trigger explanation when language or word changes
+  React.useEffect(() => {
+    if (isOpen && aiMode === 'explain' && wordObj) {
+      onExplain(wordObj, explanationLang);
+    }
+  }, [explanationLang, aiMode, isOpen, wordObj]);
+
+  const speak = (text) => {
+    // Remove markdown symbols for better speech
+    const cleanText = text.replace(/[*#]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = explanationLang === 'vi' ? 'vi-VN' : 'en-US';
+    window.speechSynthesis.speak(utterance);
+  };
 
   const renderBoldText = (text) => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -147,17 +163,44 @@ const AiAssistantModal = ({
             </div>
           )}
 
-          {aiMode === 'explain' && !aiResponse && !isAiLoading && (
-            <div className="flex flex-col items-center justify-center py-10 animate-bounce-slow">
-              <div className={`w-20 h-20 rounded-[30px] flex items-center justify-center mb-6 shadow-sm ${themeColor === 'indigo' ? 'bg-indigo-50 text-indigo-600' : 'bg-purple-50 text-purple-600'}`}>
-                <Sparkles className="w-10 h-10" />
+          {aiMode === 'explain' && (
+            <div className="flex flex-col items-center py-4 animate-bounce-slow">
+              <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-8 gap-1 shadow-inner border border-slate-200/50">
+                <button 
+                  onClick={() => setExplanationLang('vi')}
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-all flex items-center gap-2 ${
+                    explanationLang === 'vi' 
+                      ? `${selectedColor.split(' ')[0]} text-white shadow-md scale-105` 
+                      : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  <Languages className="w-3.5 h-3.5" /> TIẾNG VIỆT
+                </button>
+                <button 
+                  onClick={() => setExplanationLang('en')}
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-all flex items-center gap-2 ${
+                    explanationLang === 'en' 
+                      ? `${selectedColor.split(' ')[0]} text-white shadow-md scale-105` 
+                      : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  <Languages className="w-3.5 h-3.5" /> ENGLISH
+                </button>
               </div>
-              <button 
-                onClick={() => onExplain(wordObj)}
-                className={`${selectedColor.split(' ')[0]} text-white px-10 py-5 rounded-[25px] font-black text-lg shadow-2xl hover:opacity-90 transition-all active:scale-95 flex items-center gap-3`}
-              >
-                NHỜ AI GIẢI THÍCH CHI TIẾT
-              </button>
+
+              {!aiResponse && !isAiLoading && (
+                <>
+                  <div className={`w-20 h-20 rounded-[30px] flex items-center justify-center mb-6 shadow-sm ${themeColor === 'indigo' ? 'bg-indigo-50 text-indigo-600' : 'bg-purple-50 text-purple-600'}`}>
+                    <Sparkles className="w-10 h-10" />
+                  </div>
+                  <button 
+                    onClick={() => onExplain(wordObj, explanationLang)}
+                    className={`${selectedColor.split(' ')[0]} text-white px-10 py-5 rounded-[25px] font-black text-lg shadow-2xl hover:opacity-90 transition-all active:scale-95 flex items-center gap-3`}
+                  >
+                    {explanationLang === 'vi' ? 'NHỜ AI GIẢI THÍCH CHI TIẾT' : 'ASK AI TO EXPLAIN'}
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -169,7 +212,14 @@ const AiAssistantModal = ({
                 <p className={`${selectedColor.split(' ')[2]} font-black uppercase tracking-widest text-xs animate-pulse`}>AI đang suy nghĩ...</p>
               </div>
             ) : aiResponse ? (
-              <div className="text-slate-700 leading-relaxed">
+              <div className="text-slate-700 leading-relaxed relative group">
+                <button 
+                  onClick={() => speak(aiResponse)}
+                  className={`absolute -top-12 -right-4 p-3 rounded-2xl bg-white border border-slate-100 shadow-xl transition-all hover:scale-110 active:scale-90 flex items-center gap-2 font-black text-[10px] tracking-widest ${selectedColor.split(' ')[2]}`}
+                  title="Nghe giải thích"
+                >
+                  <Volume2 className="w-4 h-4" /> <span>PLAY AUDIO</span>
+                </button>
                 {renderAiText(aiResponse)}
               </div>
             ) : (
