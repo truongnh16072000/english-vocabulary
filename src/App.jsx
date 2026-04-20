@@ -9,6 +9,7 @@ const B2Vocabulary = lazy(() => import('./components/B2Vocabulary'));
 const ExaminePage = lazy(() => import('./components/ExaminePage'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const FavoriteVocabulary = lazy(() => import('./components/FavoriteVocabulary'));
+const InterviewPrep = lazy(() => import('./components/InterviewPrep'));
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -93,6 +94,17 @@ const App = () => {
                   </div>
                 }>
                   <Dashboard setActiveTab={setActiveTab} />
+                </Suspense>
+              ) : activeTab === 'interview-prep' ? (
+                <Suspense fallback={
+                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+                    <p className="font-bold text-slate-400 italic">Preparing your mock interview...</p>
+                  </div>
+                }>
+                  <div className="w-full h-full min-h-screen bg-slate-50">
+                     <InterviewPrep />
+                  </div>
                 </Suspense>
               ) : (
                 <div className="flex flex-col items-center justify-center h-[50vh] space-y-6">
