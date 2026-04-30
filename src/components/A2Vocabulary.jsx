@@ -12,6 +12,7 @@ import { parseA2, topicLabels, topicColors } from '../utils/vocabularyData';
 import PronunciationModal from './common/PronunciationModal';
 import AiAssistantModal from './common/AiAssistantModal';
 import FilterModal from './common/FilterModal';
+import { recordStudyActivity } from '../utils/studyTracking';
 
 /* * KỸ THUẬT SIÊU NÉN DỮ LIỆU (STRING COMPRESSION)
  * Định dạng mỗi dòng: word|ipa|pos|meaning|topic_code|example|translation
@@ -905,6 +906,7 @@ const A2Vocabulary = () => {
 
   useEffect(() => {
     localStorage.setItem('a2_flashcard_progress', currentFlashcard);
+    if (currentFlashcard > 0) recordStudyActivity(1);
   }, [currentFlashcard]);
   const [isFlipped, setIsFlipped] = useState(false);
 
