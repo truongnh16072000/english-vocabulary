@@ -1,7 +1,10 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Sidebar from './components/Sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Sparkles, BookOpen, GraduationCap, LayoutDashboard, Trophy } from 'lucide-react';
+import { 
+  Loader2, Sparkles, BookOpen, GraduationCap, LayoutDashboard, Trophy,
+  Heart, Briefcase, BookMarked, Settings
+} from 'lucide-react';
 
 const A2Vocabulary = lazy(() => import('./components/A2Vocabulary'));
 const B1Vocabulary = lazy(() => import('./components/B1Vocabulary'));
@@ -11,116 +14,140 @@ const Dashboard = lazy(() => import('./components/Dashboard'));
 const FavoriteVocabulary = lazy(() => import('./components/FavoriteVocabulary'));
 const InterviewPrep = lazy(() => import('./components/InterviewPrep'));
 
+// Bottom Navigation Items for mobile
+const bottomNavItems = [
+  { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+  { id: 'a2-vocab', label: 'A2', icon: BookOpen },
+  { id: 'b1-vocab', label: 'B1', icon: Sparkles },
+  { id: 'b2-vocab', label: 'B2', icon: BookMarked },
+  { id: 'favorites', label: 'Yêu Thích', icon: Heart },
+  { id: 'examine', label: 'Kiểm Tra', icon: Trophy },
+  { id: 'interview-prep', label: 'Phỏng Vấn', icon: Briefcase },
+];
+
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const renderFallback = (color, text) => (
+    <div className="w-full h-full min-h-[60vh] flex flex-col items-center justify-center gap-4">
+      <Loader2 className={`w-10 h-10 ${color} animate-spin`} />
+      <p className="font-bold text-slate-400 italic text-sm">{text}</p>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'a2-vocab':
+        return (
+          <Suspense fallback={renderFallback('text-indigo-500', 'Curating your A2 vocabulary...')}>
+            <A2Vocabulary />
+          </Suspense>
+        );
+      case 'b1-vocab':
+        return (
+          <Suspense fallback={renderFallback('text-purple-500', 'Curating your B1 vocabulary...')}>
+            <B1Vocabulary />
+          </Suspense>
+        );
+      case 'b2-vocab':
+        return (
+          <Suspense fallback={renderFallback('text-emerald-500', 'Curating your B2 vocabulary...')}>
+            <B2Vocabulary />
+          </Suspense>
+        );
+      case 'examine':
+        return (
+          <Suspense fallback={renderFallback('text-rose-500', 'Loading vocabulary quiz...')}>
+            <ExaminePage />
+          </Suspense>
+        );
+      case 'favorites':
+        return (
+          <Suspense fallback={renderFallback('text-rose-500', 'Finding your favorite words...')}>
+            <FavoriteVocabulary />
+          </Suspense>
+        );
+      case 'dashboard':
+        return (
+          <Suspense fallback={renderFallback('text-amber-500', 'Preparing your dashboard stats...')}>
+            <Dashboard setActiveTab={setActiveTab} />
+          </Suspense>
+        );
+      case 'interview-prep':
+        return (
+          <Suspense fallback={renderFallback('text-indigo-600', 'Preparing your mock interview...')}>
+            <InterviewPrep />
+          </Suspense>
+        );
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-[50vh] space-y-6 px-6">
+            <div className="w-24 h-24 bg-slate-100 rounded-[32px] flex items-center justify-center text-slate-300">
+              <Sparkles className="w-12 h-12" />
+            </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Content Under Construction</h2>
+              <p className="text-slate-400 font-medium italic text-sm">Tab "{activeTab}" is coming soon!</p>
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans selection:bg-indigo-100 italic">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50 font-sans selection:bg-indigo-100 italic">
+      {/* Desktop sidebar - hidden on mobile */}
+      {!isMobile && <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />}
       
-      <main className="flex-1 min-w-0 overflow-y-auto h-screen transition-all duration-300">
-        {/* Header removed as requested */}
-
+      <main className={`flex-1 min-w-0 overflow-y-auto h-screen h-[100dvh] transition-all duration-300 ${isMobile ? 'mobile-content-padding' : ''}`}>
         <section className="w-full h-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="w-full h-full"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="w-full min-h-full"
             >
-              {activeTab === 'a2-vocab' ? (
-                <Suspense fallback={
-                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Curating your A2 vocabulary...</p>
-                  </div>
-                }>
-                  <div className="w-full h-full min-h-screen bg-slate-50">
-                     <A2Vocabulary />
-                  </div>
-                </Suspense>
-              ) : activeTab === 'b1-vocab' ? (
-                <Suspense fallback={
-                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Curating your B1 vocabulary...</p>
-                  </div>
-                }>
-                  <div className="w-full h-full min-h-screen bg-slate-50">
-                     <B1Vocabulary />
-                  </div>
-                </Suspense>
-              ) : activeTab === 'b2-vocab' ? (
-                <Suspense fallback={
-                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Curating your B2 vocabulary...</p>
-                  </div>
-                }>
-                  <div className="w-full h-full min-h-screen bg-slate-50">
-                     <B2Vocabulary />
-                  </div>
-                </Suspense>
-              ) : activeTab === 'examine' ? (
-                <Suspense fallback={
-                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Loading vocabulary quiz...</p>
-                  </div>
-                }>
-                  <div className="w-full h-full min-h-screen bg-slate-50">
-                     <ExaminePage />
-                  </div>
-                </Suspense>
-              ) : activeTab === 'favorites' ? (
-                <Suspense fallback={
-                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Finding your favorite words...</p>
-                  </div>
-                }>
-                  <div className="w-full h-full min-h-screen bg-slate-50">
-                     <FavoriteVocabulary />
-                  </div>
-                </Suspense>
-              ) : activeTab === 'dashboard' ? (
-                <Suspense fallback={
-                  <div className="w-full h-96 flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-amber-500 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Preparing your dashboard stats...</p>
-                  </div>
-                }>
-                  <Dashboard setActiveTab={setActiveTab} />
-                </Suspense>
-              ) : activeTab === 'interview-prep' ? (
-                <Suspense fallback={
-                  <div className="w-full h-full min-h-screen flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-                    <p className="font-bold text-slate-400 italic">Preparing your mock interview...</p>
-                  </div>
-                }>
-                  <div className="w-full h-full min-h-screen bg-slate-50">
-                     <InterviewPrep />
-                  </div>
-                </Suspense>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[50vh] space-y-6">
-                  <div className="w-32 h-32 bg-slate-100 rounded-[40px] flex items-center justify-center text-slate-300">
-                    <Sparkles className="w-16 h-16" />
-                  </div>
-                  <div className="text-center space-y-2">
-                    <h2 className="text-3xl font-black text-slate-800 tracking-tight">Content Under Construction</h2>
-                    <p className="text-slate-400 font-medium italic">Tab "{activeTab}" is coming soon!</p>
-                  </div>
-                </div>
-              )}
+              {renderContent()}
             </motion.div>
           </AnimatePresence>
         </section>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <nav className="bottom-nav" id="mobile-bottom-nav">
+          <div className="flex items-center justify-around px-2 pt-1.5">
+            {bottomNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`bottom-nav-item ${isActive ? 'active' : 'text-slate-400'}`}
+                  aria-label={item.label}
+                >
+                  <Icon className={`w-5 h-5 transition-all duration-200 ${isActive ? 'text-indigo-600 scale-110' : ''}`} />
+                  <span className={`text-[9px] font-bold tracking-tight transition-all ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 };

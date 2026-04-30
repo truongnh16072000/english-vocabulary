@@ -130,35 +130,35 @@ const ExaminePage = () => {
   ];
 
   return (
-    <div className="bg-white text-slate-900 font-sans pb-10">
-      <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-10">
+    <div className="bg-white text-slate-900 font-sans pb-6 sm:pb-10">
+      <main className="max-w-4xl mx-auto px-3 pt-3 sm:p-6 lg:p-10">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-orange-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-200">
-            <Trophy className="w-10 h-10" />
+        <div className="text-center mb-6 sm:mb-10">
+          <div className="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-500 to-orange-500 text-white rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6 shadow-lg shadow-rose-200">
+            <Trophy className="w-7 h-7 sm:w-10 sm:h-10" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-800 mb-2">Kiểm Tra Từ Vựng</h1>
-          <p className="text-slate-400 font-medium italic">Thử thách từ vựng ở mọi cấp độ Cambridge</p>
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-800 mb-1 sm:mb-2">Kiểm Tra Từ Vựng</h1>
+          <p className="text-slate-400 font-medium italic text-sm sm:text-base">Thử thách từ vựng ở mọi cấp độ Cambridge</p>
         </div>
 
         {/* Level Selection */}
-        <div className="mb-8">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <div className="mb-5 sm:mb-8">
+          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
             <BookOpen className="w-4 h-4" /> Chọn cấp độ
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {levelConfig.map(level => (
               <button
                 key={level.id}
                 onClick={() => { setSelectedLevel(level.id); setQuizActive(false); setFilterTopic('All'); playSound('select'); }}
-                className={`p-4 rounded-2xl font-black transition-all border-2 active:scale-95 ${
+                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-black transition-all border-2 active:scale-95 ${
                   selectedLevel === level.id 
                     ? `${level.color} text-white border-transparent shadow-lg` 
                     : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300'
                 }`}
               >
-                <div className="text-lg">{level.label}</div>
-                <div className={`text-xs font-bold ${selectedLevel === level.id ? 'text-white/70' : 'text-slate-400'}`}>{level.count} từ</div>
+                <div className="text-base sm:text-lg">{level.label}</div>
+                <div className={`text-[10px] sm:text-xs font-bold ${selectedLevel === level.id ? 'text-white/70' : 'text-slate-400'}`}>{level.count} từ</div>
               </button>
             ))}
           </div>
@@ -191,122 +191,122 @@ const ExaminePage = () => {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white p-8 sm:p-14 rounded-[40px] sm:rounded-[50px] shadow-2xl border border-slate-100 text-center"
+              className="bg-white p-6 sm:p-14 rounded-[28px] sm:rounded-[50px] shadow-2xl border border-slate-100 text-center"
             >
-              <div className="w-24 h-24 bg-rose-50 text-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
-                <Trophy className="w-12 h-12" />
+              <div className="w-16 h-16 sm:w-24 sm:h-24 bg-rose-50 text-rose-600 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-5 sm:mb-8 shadow-sm">
+                <Trophy className="w-8 h-8 sm:w-12 sm:h-12" />
               </div>
-              <h2 className="text-3xl font-black text-slate-800 mb-2">Thử thách từ vựng</h2>
-              <p className="text-slate-400 font-medium mb-4 italic">Chọn số lượng từ bạn muốn kiểm tra</p>
-              <p className="text-sm text-rose-500 font-bold mb-10">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">Thử thách từ vựng</h2>
+              <p className="text-slate-400 font-medium mb-3 sm:mb-4 italic text-sm sm:text-base">Chọn số lượng từ bạn muốn kiểm tra</p>
+              <p className="text-xs sm:text-sm text-rose-500 font-bold mb-6 sm:mb-10">
                 📚 {selectedLevel === 'all' ? 'Tất cả cấp độ' : selectedLevel.toUpperCase()} • {topicConfig[filterTopic].label} • {filteredVocab.length} từ sẵn sàng
               </p>
               
-              <div className="grid grid-cols-2 gap-4 mb-10">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-10">
                 {[10, 20, 50, 'all'].map(size => (
                   <button 
                     key={size}
                     onClick={() => startNewQuiz(size)}
                     disabled={filteredVocab.length === 0}
-                    className="p-5 rounded-3xl border-2 border-slate-100 hover:border-rose-400 hover:bg-rose-50 transition-all font-black text-slate-700 active:scale-95 group disabled:opacity-30"
+                    className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 border-slate-100 hover:border-rose-400 hover:bg-rose-50 transition-all font-black text-slate-700 active:scale-95 group disabled:opacity-30"
                   >
-                    <div className="text-2xl group-hover:text-rose-600">{size === 'all' ? filteredVocab.length : Math.min(size, filteredVocab.length)}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-rose-400">{size === 'all' ? 'Tất cả từ' : 'Từ vựng'}</div>
+                    <div className="text-xl sm:text-2xl group-hover:text-rose-600">{size === 'all' ? filteredVocab.length : Math.min(size, filteredVocab.length)}</div>
+                    <div className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-rose-400">{size === 'all' ? 'Tất cả từ' : 'Từ vựng'}</div>
                   </button>
                 ))}
               </div>
             </motion.div>
           ) : !quizFinished ? (
-            <div className="bg-white p-6 sm:p-10 rounded-[30px] sm:rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
-              <div className="flex justify-between items-center mb-12">
+            <div className="bg-white p-4 sm:p-10 rounded-[24px] sm:rounded-[40px] shadow-2xl border border-slate-100 animate-slide-up">
+              <div className="flex justify-between items-center mb-6 sm:mb-12">
                 <div className="flex flex-col text-left">
-                  <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">TIẾN ĐỘ</span>
-                  <span className="text-slate-800 font-black text-lg">{quizIndex + 1} / {quizPool.length}</span>
+                  <span className="text-slate-400 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-1">TIẾN ĐỘ</span>
+                  <span className="text-slate-800 font-black text-base sm:text-lg">{quizIndex + 1} / {quizPool.length}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-black text-sm shadow-sm border border-emerald-100 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" /> {quizScore}
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-emerald-50 text-emerald-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-black text-xs sm:text-sm shadow-sm border border-emerald-100 flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {quizScore}
                   </div>
                   <button
                     onClick={() => { setQuizActive(false); playSound('click'); }}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 font-bold text-sm hover:bg-slate-200 transition-all"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-500 font-bold text-xs sm:text-sm hover:bg-slate-200 transition-all"
                   >
                     Thoát
                   </button>
                 </div>
               </div>
 
-              <div className="text-center mb-12">
-                <p className="text-slate-400 text-sm font-bold mb-4 uppercase tracking-widest">Từ này nghĩa là gì?</p>
-                <h3 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-800 capitalize mb-6 sm:mb-8 tracking-tighter break-words px-2">{quizPool[quizIndex]?.word}</h3>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-slate-300 text-sm font-medium">{quizPool[quizIndex]?.ipa}</span>
+              <div className="text-center mb-6 sm:mb-12">
+                <p className="text-slate-400 text-xs sm:text-sm font-bold mb-3 sm:mb-4 uppercase tracking-widest">Từ này nghĩa là gì?</p>
+                <h3 className="text-3xl sm:text-5xl md:text-6xl font-black text-slate-800 capitalize mb-4 sm:mb-8 tracking-tighter break-words px-2">{quizPool[quizIndex]?.word}</h3>
+                <div className="flex items-center justify-center gap-2 sm:gap-3">
+                  <span className="text-slate-300 text-xs sm:text-sm font-medium">{quizPool[quizIndex]?.ipa}</span>
                   <button 
                     onClick={() => speak(quizPool[quizIndex]?.word)} 
-                    className="p-3 bg-rose-50 rounded-full text-rose-500 hover:text-rose-700 transition-all hover:scale-110 active:scale-90"
+                    className="p-2.5 sm:p-3 bg-rose-50 rounded-full text-rose-500 hover:text-rose-700 transition-all hover:scale-110 active:scale-90"
                   >
-                    <Volume2 className="w-8 h-8" />
+                    <Volume2 className="w-6 h-6 sm:w-8 sm:h-8" />
                   </button>
                 </div>
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid gap-2.5 sm:gap-4">
                 {quizOptions.map((option, idx) => (
                   <button
                     key={idx} 
                     onClick={() => !selectedAnswer && handleQuizAnswer(option)}
-                    className={`w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-left border-2 sm:border-4 transition-all font-black text-base sm:text-lg shadow-sm flex justify-between items-center group ${
+                    className={`w-full p-3.5 sm:p-6 rounded-xl sm:rounded-3xl text-left border-2 transition-all font-bold sm:font-black text-sm sm:text-lg shadow-sm flex justify-between items-center group ${
                       selectedAnswer === option 
-                        ? (option === quizPool[quizIndex]?.meaning ? 'bg-emerald-50 border-emerald-500 text-emerald-700 scale-[1.03]' : 'bg-rose-50 border-rose-500 text-rose-700 shake') 
+                        ? (option === quizPool[quizIndex]?.meaning ? 'bg-emerald-50 border-emerald-500 text-emerald-700 scale-[1.02]' : 'bg-rose-50 border-rose-500 text-rose-700 shake') 
                         : selectedAnswer && option === quizPool[quizIndex]?.meaning 
                         ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
                         : 'bg-white border-slate-100 hover:border-rose-400 hover:bg-slate-50'
                     }`}
                   >
-                    <span className="flex-1 pr-2 sm:pr-4 leading-tight">{option}</span>
+                    <span className="flex-1 pr-2 leading-snug">{option}</span>
                     {selectedAnswer === option && (
-                      option === quizPool[quizIndex]?.meaning ? <CheckCircle className="w-6 h-6" /> : <RotateCcw className="w-6 h-6" />
+                      option === quizPool[quizIndex]?.meaning ? <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" /> : <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                     )}
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="bg-white p-8 sm:p-16 rounded-[40px] sm:rounded-[50px] shadow-2xl text-center border border-rose-50 animate-zoom-in">
-              <div className="w-28 h-28 bg-gradient-to-br from-rose-100 to-orange-100 text-rose-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-inner">
-                <Brain className="w-14 h-14" />
+            <div className="bg-white p-6 sm:p-16 rounded-[28px] sm:rounded-[50px] shadow-2xl text-center border border-rose-50 animate-zoom-in">
+              <div className="w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-br from-rose-100 to-orange-100 text-rose-600 rounded-[28px] sm:rounded-[40px] flex items-center justify-center mx-auto mb-6 sm:mb-10 shadow-inner">
+                <Brain className="w-10 h-10 sm:w-14 sm:h-14" />
               </div>
-              <h2 className="text-4xl font-black text-slate-800 mb-4 uppercase">KẾT QUẢ</h2>
-              <p className="text-slate-500 font-bold mb-12 italic text-lg">
+              <h2 className="text-2xl sm:text-4xl font-black text-slate-800 mb-3 sm:mb-4 uppercase">KẾT QUẢ</h2>
+              <p className="text-slate-500 font-bold mb-6 sm:mb-12 italic text-base sm:text-lg">
                 Bạn đã chinh phục được {quizScore} trên {quizPool.length} thử thách!
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                  <div className="text-3xl font-black text-rose-600">{Math.round((quizScore / quizPool.length) * 100)}%</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Độ chính xác</div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-12">
+                <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-100">
+                  <div className="text-2xl sm:text-3xl font-black text-rose-600">{Math.round((quizScore / quizPool.length) * 100)}%</div>
+                  <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Độ chính xác</div>
                 </div>
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                  <div className="text-3xl font-black text-slate-800">{quizScore}</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Câu trả lời đúng</div>
+                <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-100">
+                  <div className="text-2xl sm:text-3xl font-black text-slate-800">{quizScore}</div>
+                  <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Câu trả lời đúng</div>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
                 <button 
                   onClick={() => setQuizActive(false)} 
-                  className="w-full sm:w-auto px-12 py-5 bg-gradient-to-r from-rose-600 to-orange-500 text-white rounded-3xl font-black text-lg shadow-xl hover:shadow-2xl transition-all active:scale-95"
+                  className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-rose-600 to-orange-500 text-white rounded-2xl sm:rounded-3xl font-black text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all active:scale-95"
                 >
                   LÀM BÀI MỚI
                 </button>
                 {wrongAnswers.length > 0 && (
                   <button 
                     onClick={() => setReviewMode(!reviewMode)} 
-                    className={`w-full sm:w-auto px-8 py-5 rounded-3xl font-black text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                    className={`w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 rounded-2xl sm:rounded-3xl font-black text-base sm:text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${
                       reviewMode ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' : 'bg-rose-600 text-white hover:bg-rose-700'
                     }`}
                   >
-                    <AlertCircle className="w-6 h-6" />
+                    <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                     {reviewMode ? 'ĐÓNG XEM LẠI' : `XEM ${wrongAnswers.length} CÂU SAI`}
                   </button>
                 )}
@@ -324,7 +324,7 @@ const ExaminePage = () => {
         </div>
       </main>
 
-      <footer className="max-w-6xl mx-auto px-6 py-10 text-center text-slate-300">
+      <footer className="max-w-6xl mx-auto px-4 py-6 sm:py-10 text-center text-slate-300 hidden sm:block">
         <div className="flex items-center justify-center gap-2 font-black tracking-widest uppercase text-xs">
           <BookOpen className="w-4 h-4" />
           Vocabulary Examine • All Levels

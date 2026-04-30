@@ -84,29 +84,29 @@ const AiAssistantModal = ({
   const selectedColor = colorClasses[themeColor] || colorClasses.indigo;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}>
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}>
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-100"
+        className="bg-white w-full sm:max-w-2xl rounded-t-[28px] sm:rounded-[40px] shadow-2xl flex flex-col max-h-[92vh] max-h-[92dvh] sm:max-h-[90vh] overflow-hidden border border-slate-100"
       >
         
         {/* Modal Header */}
-        <div className={`${selectedColor.split(' ')[0]} p-6 sm:p-8 flex justify-between items-center text-white shrink-0`}>
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-3 rounded-2xl">
-              <Sparkles className="w-6 h-6" />
+        <div className={`${selectedColor.split(' ')[0]} p-4 sm:p-8 flex justify-between items-center text-white shrink-0`}>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h3 className="font-black text-xl sm:text-2xl uppercase tracking-tighter">AI Trợ Giảng</h3>
-              <p className="text-white/80 text-xs sm:text-sm font-bold">Đang học: <span className="text-white capitalize">{wordObj.word}</span></p>
+              <h3 className="font-black text-lg sm:text-2xl uppercase tracking-tighter">AI Trợ Giảng</h3>
+              <p className="text-white/80 text-[10px] sm:text-sm font-bold">Đang học: <span className="text-white capitalize">{wordObj.word}</span></p>
             </div>
           </div>
           <button 
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-xl transition-colors active:scale-90"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
@@ -135,7 +135,7 @@ const AiAssistantModal = ({
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-grow bg-slate-50/30">
+        <div className="p-4 sm:p-8 overflow-y-auto custom-scrollbar flex-grow bg-slate-50/30">
           {aiMode === 'practice' && (
             <div className="mb-8 animate-slide-up">
               <label className="block text-slate-500 font-black text-[10px] uppercase tracking-widest mb-3 ml-1">ĐỀ BÀI</label>
@@ -150,14 +150,14 @@ const AiAssistantModal = ({
                   value={userSentence}
                   onChange={(e) => setUserSentence(e.target.value)}
                   placeholder="Nhập câu của bạn tại đây..."
-                  className="w-full p-6 rounded-[32px] border-2 border-slate-100 focus:border-slate-300 focus:ring-0 transition-all min-h-[140px] font-medium text-slate-700 shadow-inner resize-none outline-none"
+                  className="w-full p-4 sm:p-6 rounded-[20px] sm:rounded-[32px] border-2 border-slate-100 focus:border-slate-300 focus:ring-0 transition-all min-h-[100px] sm:min-h-[140px] font-medium text-slate-700 shadow-inner resize-none outline-none text-sm sm:text-base"
                 />
                 <button 
                   onClick={onCheckSentence}
                   disabled={isAiLoading || !userSentence.trim()}
-                  className={`${selectedColor.split(' ')[0]} text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest flex items-center gap-3 absolute bottom-4 right-4 hover:opacity-90 disabled:opacity-50 transition-all shadow-xl active:scale-95`}
+                  className={`${selectedColor.split(' ')[0]} text-white px-5 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs tracking-widest flex items-center gap-2 sm:gap-3 absolute bottom-3 right-3 sm:bottom-4 sm:right-4 hover:opacity-90 disabled:opacity-50 transition-all shadow-xl active:scale-95`}
                 >
-                  {isAiLoading ? 'AI ĐANG XEM...' : 'CHẤM ĐIỂM'} <Send className="w-4 h-4" />
+                  {isAiLoading ? 'AI ĐANG XEM...' : 'CHẤM ĐIỂM'} <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
@@ -205,7 +205,7 @@ const AiAssistantModal = ({
           )}
 
           {/* AI Response Area */}
-          <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm min-h-[120px]">
+          <div className="bg-white p-5 sm:p-8 rounded-[24px] sm:rounded-[40px] border border-slate-100 shadow-sm min-h-[80px] sm:min-h-[120px]">
             {isAiLoading ? (
               <div className="flex flex-col items-center justify-center h-full py-10 gap-6">
                 <div className={`w-12 h-12 border-4 border-t-transparent rounded-full animate-spin ${selectedColor.split(' ')[2]}`}></div>

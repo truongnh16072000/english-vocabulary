@@ -407,7 +407,7 @@ const InterviewPrep = () => {
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-slate-50 flex flex-col p-6 lg:p-10 font-sans">
+    <div className="w-full h-full min-h-screen bg-slate-50 flex flex-col p-3 sm:p-6 lg:p-10 font-sans">
       <AnimatePresence mode="wait">
         {stage === 'selection' ? (
           <motion.div
@@ -415,80 +415,81 @@ const InterviewPrep = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="max-w-6xl mx-auto w-full space-y-12"
+            className="max-w-6xl mx-auto w-full space-y-6 sm:space-y-12"
           >
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 font-bold text-sm tracking-wide uppercase">
-                <Sparkles size={16} />
+            <div className="text-center space-y-2 sm:space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-indigo-50 text-indigo-600 font-bold text-xs sm:text-sm tracking-wide uppercase">
+                <Sparkles size={14} />
                 AI Career Coach
               </div>
-              <h1 className="text-5xl font-black text-slate-800 tracking-tight">
+              <h1 className="text-3xl sm:text-5xl font-black text-slate-800 tracking-tight">
                 Mock <span className="text-indigo-600">Interview</span> Prep
               </h1>
-              <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto italic">
+              <p className="text-base sm:text-xl text-slate-500 font-medium max-w-2xl mx-auto italic">
                 Select your target company to start a simulated Java technical interview in English.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {COMPANIES.map((company) => (
-                <div key={company.id} className="group relative flex flex-col text-left p-8 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl overflow-hidden min-h-[400px]">
+                <div key={company.id} className="group relative flex flex-col text-left p-5 sm:p-8 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl overflow-hidden">
                   <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${company.color} opacity-5 rounded-bl-[100px] transition-all group-hover:opacity-10 group-hover:scale-110`} />
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${company.color} flex items-center justify-center text-white mb-6 shadow-lg`}>
-                    <Building2 size={28} />
+                  <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${company.color} flex items-center justify-center text-white mb-4 sm:mb-6 shadow-lg`}>
+                    <Building2 size={22} />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2">{company.name}</h3>
-                  <p className="text-slate-500 text-sm mb-6 flex-1 italic">{company.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-8">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-1 sm:mb-2">{company.name}</h3>
+                  <p className="text-slate-500 text-xs sm:text-sm mb-4 sm:mb-6 flex-1 italic">{company.description}</p>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-8">
                     {company.focus.map(tag => (
-                      <span key={tag} className="px-2.5 py-1 rounded-lg bg-slate-50 text-slate-400 text-xs font-bold border border-slate-100">
+                      <span key={tag} className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg bg-slate-50 text-slate-400 text-[10px] sm:text-xs font-bold border border-slate-100">
                         {tag}
                       </span>
                     ))}
                   </div>
                   
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2 sm:gap-3">
                     <button 
                       onClick={() => startInterview(company, false)}
-                      className="w-full flex items-center justify-between px-6 py-3.5 bg-slate-50 text-slate-700 font-black rounded-2xl hover:bg-slate-100 transition-all group-hover:shadow-sm"
+                      className="w-full flex items-center justify-between px-4 sm:px-6 py-3 bg-slate-50 text-slate-700 font-black rounded-xl sm:rounded-2xl hover:bg-slate-100 transition-all text-sm sm:text-base"
                     >
-                      Chat Mode <ChevronRight size={18} />
+                      Chat Mode <ChevronRight size={16} />
                     </button>
                     <button 
                       onClick={() => startInterview(company, true)}
-                      className="w-full flex items-center justify-between px-6 py-3.5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                      className="w-full flex items-center justify-between px-4 sm:px-6 py-3 bg-indigo-600 text-white font-black rounded-xl sm:rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 text-sm sm:text-base"
                     >
-                      <span className="flex items-center gap-2"><Phone size={18} /> Live Call</span>
-                      <ChevronRight size={18} />
+                      <span className="flex items-center gap-2"><Phone size={16} /> Live Call</span>
+                      <ChevronRight size={16} />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
             
-            <div className="bg-slate-900 rounded-[40px] p-10 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-slate-900 rounded-[24px] sm:rounded-[40px] p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-8 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl" />
-              <div className="relative z-10 space-y-4 text-center md:text-left">
-                <div className="flex items-center gap-2 text-indigo-300 font-bold uppercase tracking-widest text-sm mb-2">
-                  <Calendar size={18} />
+              <div className="relative z-10 space-y-3 sm:space-y-4 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 text-indigo-300 font-bold uppercase tracking-widest text-xs sm:text-sm mb-1 sm:mb-2">
+                  <Calendar size={16} />
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </div>
-                <h2 className="text-3xl font-black">Daily Challenge</h2>
-                <p className="text-slate-400 max-w-md text-lg italic">
-                  One question a day keeps the rejection away. Level up your Java and English speaking skills.
+                <h2 className="text-2xl sm:text-3xl font-black">Daily Challenge</h2>
+                <p className="text-slate-400 max-w-md text-sm sm:text-lg italic">
+                  One question a day keeps the rejection away.
                 </p>
-                <div className="pt-4 flex flex-wrap gap-4 justify-center md:justify-start">
+                <div className="pt-2 sm:pt-4 flex flex-wrap gap-4 justify-center md:justify-start">
                    <button 
                     onClick={handleDailyChallenge}
-                    className="px-8 py-3.5 bg-white text-slate-900 font-black rounded-2xl hover:bg-slate-50 transition-colors shadow-lg active:scale-95"
+                    className="px-6 sm:px-8 py-3 bg-white text-slate-900 font-black rounded-xl sm:rounded-2xl hover:bg-slate-50 transition-colors shadow-lg active:scale-95 text-sm sm:text-base"
                    >
                       Start Today's Quiz
                    </button>
                 </div>
               </div>
-              <div className="relative w-48 h-48 flex items-center justify-center">
+              <div className="relative w-28 h-28 sm:w-48 sm:h-48 flex items-center justify-center">
                  <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full animate-pulse" />
-                 <Trophy size={100} className="relative z-10 text-amber-300 drop-shadow-2xl" />
+                 <Trophy size={60} className="relative z-10 text-amber-300 drop-shadow-2xl sm:hidden" />
+                 <Trophy size={100} className="relative z-10 text-amber-300 drop-shadow-2xl hidden sm:block" />
               </div>
             </div>
           </motion.div>
@@ -498,33 +499,33 @@ const InterviewPrep = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col h-[calc(100vh-80px)] max-w-5xl mx-auto w-full relative"
+            className="flex flex-col h-[calc(100vh-80px)] h-[calc(100dvh-80px)] max-w-5xl mx-auto w-full relative"
           >
-            <div className="flex items-center justify-between mb-6 shrink-0">
-              <div className="flex items-center gap-4">
-                <button onClick={resetInterview} className="p-3 bg-white rounded-2xl border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all active:scale-90">
+            <div className="flex items-center justify-between mb-3 sm:mb-6 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                <button onClick={resetInterview} className="p-2.5 sm:p-3 bg-white rounded-xl sm:rounded-2xl border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all active:scale-90 shrink-0">
                   <RotateCcw size={20} />
                 </button>
-                <div>
-                  <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2 sm:gap-3">
                     {isRealtimeMode ? (
                       <span className="flex items-center gap-2 text-rose-500">
-                        <span className="relative flex h-3 w-3">
+                        <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-rose-500"></span>
                         </span>
                         Voice Call
                       </span>
                     ) : isDailyChallenge ? "Daily Challenge" : "Mock Interview"}
                   </h2>
-                  <div className="flex items-center gap-2 text-slate-400 text-sm font-bold italic">
-                    <Building2 size={14} className="text-indigo-500" />
-                    {selectedCompany?.name}
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-400 text-xs sm:text-sm font-bold italic truncate">
+                    <Building2 size={12} className="text-indigo-500 shrink-0" />
+                    <span className="truncate">{selectedCompany?.name}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                 {isRealtimeMode && (
                   <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-[20px] border border-slate-100 shadow-sm">
                      <div className="flex gap-1 items-center">
@@ -549,7 +550,7 @@ const InterviewPrep = () => {
               </div>
             </div>
 
-            <div className="flex-1 bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden relative">
+            <div className="flex-1 bg-white rounded-[20px] sm:rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden relative">
               {/* Interim Transcript Overlay */}
               <AnimatePresence>
                 {isListening && interimTranscript && (
@@ -565,7 +566,7 @@ const InterviewPrep = () => {
                 )}
               </AnimatePresence>
 
-              <div className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-4 sm:space-y-8 scroll-smooth no-scrollbar">
                 {messages.map((m, i) => (
                   <motion.div
                     key={i}
@@ -573,13 +574,13 @@ const InterviewPrep = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex gap-4 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-lg ${m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                        {m.role === 'user' ? <User size={20} /> : <Terminal size={20} />}
+                    <div className={`flex gap-2.5 sm:gap-4 max-w-[92%] sm:max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex-shrink-0 flex items-center justify-center shadow-lg ${m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        {m.role === 'user' ? <User size={16} /> : <Terminal size={16} />}
                       </div>
                       
-                      <div className={`space-y-4 ${m.role === 'user' ? 'text-right' : ''}`}>
-                         <div className={`p-6 rounded-[32px] text-sm md:text-base leading-relaxed break-words shadow-sm ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-50 text-slate-700 rounded-tl-none border border-slate-100'}`}>
+                      <div className={`space-y-3 sm:space-y-4 min-w-0 ${m.role === 'user' ? 'text-right' : ''}`}>
+                         <div className={`p-4 sm:p-6 rounded-[20px] sm:rounded-[32px] text-xs sm:text-base leading-relaxed break-words shadow-sm ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-50 text-slate-700 rounded-tl-none border border-slate-100'}`}>
                             {m.role === 'assistant' ? (
                                <div className="space-y-6 text-left">
                                   {m.feedback && (
@@ -659,8 +660,8 @@ const InterviewPrep = () => {
                 <div ref={chatEndRef} className="h-4" />
               </div>
 
-              <div className="p-6 bg-slate-50/50 border-t border-slate-100">
-                <div className="flex gap-4 items-center">
+              <div className="p-3 sm:p-6 bg-slate-50/50 border-t border-slate-100">
+                <div className="flex gap-2 sm:gap-4 items-center">
                   <div className="relative flex-1">
                     <input
                       type="text"
@@ -668,17 +669,17 @@ const InterviewPrep = () => {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                       placeholder={isListening ? "Listening..." : "Type your answer..."}
-                      className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:italic pr-12 font-medium"
+                      className="w-full bg-white border border-slate-200 rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:italic pr-10 sm:pr-12 font-medium"
                     />
                     <button 
                       onClick={startListening} 
-                      className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all ${isListening ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100'}`}
+                      className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all ${isListening ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100'}`}
                     >
-                      <Mic size={20} />
+                      <Mic size={18} />
                     </button>
                   </div>
-                  <button onClick={() => handleSend()} disabled={!input.trim() || isLoading} className="p-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 disabled:opacity-50">
-                    <Send size={24} />
+                  <button onClick={() => handleSend()} disabled={!input.trim() || isLoading} className="p-3 sm:p-4 bg-indigo-600 text-white rounded-xl sm:rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 disabled:opacity-50 shrink-0">
+                    <Send size={20} />
                   </button>
                 </div>
                 

@@ -1067,25 +1067,23 @@ const A2Vocabulary = () => {
   }, [filteredVocab.length, currentFlashcard]);
 
   return (
-    <div className="bg-white text-slate-900 font-sans pb-10">
+    <div className="bg-white text-slate-900 font-sans pb-6 sm:pb-10">
 
-
-
-      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-10">
-        <div className="mb-8 space-y-6">
-          <div className="flex gap-4">
+      <main className="max-w-6xl mx-auto px-3 pt-3 sm:p-6 lg:p-10">
+        <div className="mb-4 sm:mb-8 space-y-4 sm:space-y-6">
+          <div className="flex gap-2 sm:gap-4">
             <div className="relative flex-1 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5 group-focus-within:text-indigo-500 transition-colors" />
               <input 
-                type="text" placeholder="Tìm kiếm theo từ tiếng Anh hoặc nghĩa tiếng Việt..." 
-                className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none shadow-sm transition-all"
+                type="text" placeholder="Tìm kiếm từ vựng..." 
+                className="w-full pl-9 sm:pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none shadow-sm transition-all text-sm sm:text-base"
                 value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentFlashcard(0); }}
               />
             </div>
             
             <button 
               onClick={() => setIsFilterModalOpen(true)}
-              className="px-5 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+              className="px-3 sm:px-5 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
             >
               <Filter className="w-5 h-5" /> <span className="hidden sm:inline">Bộ lọc</span>
             </button>
@@ -1093,91 +1091,93 @@ const A2Vocabulary = () => {
         </div>
 
         {filteredVocab.length > 0 && (
-          <div className="flex flex-col items-center py-4 md:py-6 gap-6 md:gap-8">
+          <div className="flex flex-col items-center py-2 sm:py-6 gap-4 sm:gap-8">
 
             <div 
-              className={`relative w-full max-w-[min(384px,calc(100vw-2rem))] h-[min(420px,55vh)] cursor-pointer transition-all duration-700 preserve-3d group ${isFlipped ? 'rotate-y-180' : ''}`}
+              className={`relative w-full max-w-[min(384px,calc(100vw-1.5rem))] h-[min(380px,52vh)] sm:h-[min(420px,55vh)] cursor-pointer transition-all duration-700 preserve-3d group ${isFlipped ? 'rotate-y-180' : ''}`}
               onClick={() => { setIsFlipped(!isFlipped); playSound('click'); }}
               style={{ perspective: '1200px' }}
             >
-              <div className={`absolute inset-0 bg-white rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 md:p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-                <div className="absolute top-5 left-5 md:top-6 md:left-6 bg-slate-100 text-slate-400 px-3 py-1.5 rounded-xl text-[10px] md:text-xs font-black tracking-widest uppercase">
+              {/* Front Side */}
+              <div className={`absolute inset-0 bg-white rounded-[28px] sm:rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-6 sm:p-10 border-4 border-white ring-1 ring-slate-100 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
+                <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-slate-100 text-slate-400 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-black tracking-widest uppercase">
                   {currentFlashcard + 1} / {filteredVocab.length}
                 </div>
                 <button 
                   onClick={(e) => toggleFavorite(e, filteredVocab[currentFlashcard].word)}
-                  className="absolute top-5 right-5 md:top-6 md:right-6 bg-slate-100 p-2.5 rounded-xl transition-all hover:scale-110 active:scale-90 shadow-sm"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-slate-100 p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all hover:scale-110 active:scale-90 shadow-sm"
                 >
-                  <Heart className={`w-5 h-5 ${favoriteWords.includes(filteredVocab[currentFlashcard].word) ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
+                  <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${favoriteWords.includes(filteredVocab[currentFlashcard].word) ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
                 </button>
-                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-white mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl flex items-center justify-center text-white mb-4 sm:mb-6 ${topicConfig[filteredVocab[currentFlashcard].topic].color}`}>
                    {topicConfig[filteredVocab[currentFlashcard].topic].icon}
                 </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-4 tracking-tighter text-center break-words px-4 leading-tight">{filteredVocab[currentFlashcard].word}</h2>
-                <p className="text-slate-400 text-2xl font-medium tracking-wide">{filteredVocab[currentFlashcard].ipa}</p>
-                <div className="mt-16 flex items-center gap-3 text-slate-300 text-xs font-black uppercase tracking-[0.2em]">
-                  <Play className="w-4 h-4" /> Chạm để lật thẻ
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-800 capitalize mb-2 sm:mb-4 tracking-tighter text-center break-words px-2 leading-tight">{filteredVocab[currentFlashcard].word}</h2>
+                <p className="text-slate-400 text-xl sm:text-2xl font-medium tracking-wide">{filteredVocab[currentFlashcard].ipa}</p>
+                <div className="mt-8 sm:mt-16 flex items-center gap-2 text-slate-300 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em]">
+                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Chạm để lật thẻ
                 </div>
               </div>
 
+              {/* Back Side */}
               <div 
-                className={`absolute inset-0 bg-indigo-600 rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 md:p-10 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 bg-indigo-600 rounded-[28px] sm:rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-6 sm:p-10 text-white backface-hidden transform rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
                 style={{ transform: 'rotateY(180deg)' }}
               >
-                <div className="absolute top-5 left-5 md:top-6 md:left-6 bg-white/20 text-white px-3 py-1.5 rounded-xl text-[10px] md:text-xs font-black tracking-widest uppercase">
+                <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/20 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-black tracking-widest uppercase">
                   {currentFlashcard + 1} / {filteredVocab.length}
                 </div>
                 <button 
                   onClick={(e) => toggleFavorite(e, filteredVocab[currentFlashcard].word)}
-                  className="absolute top-5 right-5 md:top-6 md:right-6 bg-white/20 p-2.5 rounded-xl transition-all hover:scale-110 active:scale-90"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-white/20 p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all hover:scale-110 active:scale-90"
                 >
-                  <Heart className={`w-5 h-5 ${favoriteWords.includes(filteredVocab[currentFlashcard].word) ? 'fill-white text-white' : 'text-white/60'}`} />
+                  <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${favoriteWords.includes(filteredVocab[currentFlashcard].word) ? 'fill-white text-white' : 'text-white/60'}`} />
                 </button>
-                <span className="text-indigo-200 text-xs font-black uppercase mb-4 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
-                <h3 className="text-3xl font-black mb-8 text-center leading-tight underline decoration-indigo-400 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
-                <div className="w-full h-px bg-white/20 mb-8"></div>
-                <p className="italic text-indigo-50 text-lg text-center mb-4 font-medium px-4 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
-                <p className="text-xs text-indigo-300 text-center font-bold tracking-wider uppercase opacity-80">{filteredVocab[currentFlashcard].translation}</p>
+                <span className="text-indigo-200 text-[10px] sm:text-xs font-black uppercase mb-3 sm:mb-4 tracking-widest">{topicConfig[filteredVocab[currentFlashcard].topic].label}</span>
+                <h3 className="text-2xl sm:text-3xl font-black mb-5 sm:mb-8 text-center leading-tight underline decoration-indigo-400 underline-offset-8">{filteredVocab[currentFlashcard].meaning}</h3>
+                <div className="w-full h-px bg-white/20 mb-5 sm:mb-8"></div>
+                <p className="italic text-indigo-50 text-base sm:text-lg text-center mb-3 sm:mb-4 font-medium px-2 sm:px-4 leading-relaxed">"{filteredVocab[currentFlashcard].example}"</p>
+                <p className="text-[10px] sm:text-xs text-indigo-300 text-center font-bold tracking-wider uppercase opacity-80">{filteredVocab[currentFlashcard].translation}</p>
               </div>
             </div>
 
-            <div className="flex gap-3 sm:gap-5 items-center flex-wrap justify-center">
+            {/* Action buttons - optimized for mobile thumb reach */}
+            <div className="flex gap-2.5 sm:gap-5 items-center justify-center w-full max-w-md px-2">
               <button 
                 disabled={currentFlashcard === 0} 
                 onClick={() => { setCurrentFlashcard(prev => prev - 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
+                className="p-2.5 sm:p-4 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
-                <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+                <ChevronLeft className="w-5 h-5 sm:w-7 sm:h-7" />
               </button>
               <button 
                 onClick={() => speak(filteredVocab[currentFlashcard].word)} 
-                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-indigo-500 hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-95"
+                className="p-2.5 sm:p-4 rounded-full bg-white border border-slate-200 text-indigo-500 hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-95"
                 title="Nghe"
               >
-                <Volume2 className="w-6 h-6 sm:w-7 sm:h-7" />
+                <Volume2 className="w-5 h-5 sm:w-7 sm:h-7" />
               </button>
               <button 
                 onClick={() => handleOpenPronounce(filteredVocab[currentFlashcard])}
-                className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full font-black shadow-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50`}
+                className="px-5 sm:px-8 py-2.5 sm:py-4 rounded-full font-black shadow-xl flex items-center gap-2 sm:gap-3 transition-all hover:scale-105 active:scale-95 ring-4 sm:ring-8 bg-rose-600 text-white hover:bg-rose-700 ring-rose-50 text-sm sm:text-base"
               >
-                <Mic className="w-5 h-5" /> PHÁT ÂM
+                <Mic className="w-4 h-4 sm:w-5 sm:h-5" /> PHÁT ÂM
               </button>
               <button 
                 onClick={() => handleOpenAiModal(filteredVocab[currentFlashcard])}
-                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
+                className="p-2.5 sm:p-4 rounded-full bg-white border border-slate-200 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
                 title="Hỏi AI"
               >
-                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
+                <Sparkles className="w-5 h-5 sm:w-7 sm:h-7" />
               </button>
               <button 
                 disabled={currentFlashcard === filteredVocab.length - 1} 
                 onClick={() => { setCurrentFlashcard(prev => prev + 1); setIsFlipped(false); playSound('click'); }} 
-                className="p-3 sm:p-4 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
+                className="p-2.5 sm:p-4 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-500 disabled:opacity-30 transition-all shadow-lg active:scale-95"
               >
-                <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
+                <ChevronRight className="w-5 h-5 sm:w-7 sm:h-7" />
               </button>
             </div>
-
 
           </div>
         )}
@@ -1231,7 +1231,7 @@ const A2Vocabulary = () => {
         themeColor="indigo"
       />
 
-      <footer className="max-w-6xl mx-auto px-6 py-10 text-center text-slate-300">
+      <footer className="max-w-6xl mx-auto px-4 py-6 sm:py-10 text-center text-slate-300 hidden sm:block">
         <div className="flex items-center justify-center gap-2 font-black tracking-widest uppercase text-xs">
           <BookOpen className="w-4 h-4" />
           A2 Level Vocabulary • AI Assistant
