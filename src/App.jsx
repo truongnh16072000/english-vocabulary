@@ -6,9 +6,7 @@ import {
   Heart, Briefcase, BookMarked, Settings
 } from 'lucide-react';
 
-const A2Vocabulary = lazy(() => import('./components/A2Vocabulary'));
-const B1Vocabulary = lazy(() => import('./components/B1Vocabulary'));
-const B2Vocabulary = lazy(() => import('./components/B2Vocabulary'));
+const FlashcardsPage = lazy(() => import('./components/FlashcardsPage'));
 const ExaminePage = lazy(() => import('./components/ExaminePage'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const FavoriteVocabulary = lazy(() => import('./components/FavoriteVocabulary'));
@@ -17,9 +15,7 @@ const InterviewPrep = lazy(() => import('./components/InterviewPrep'));
 // Bottom Navigation Items for mobile
 const bottomNavItems = [
   { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-  { id: 'a2-vocab', label: 'A2', icon: BookOpen },
-  { id: 'b1-vocab', label: 'B1', icon: Sparkles },
-  { id: 'b2-vocab', label: 'B2', icon: BookMarked },
+  { id: 'flashcards', label: 'Từ vựng', icon: BookOpen },
   { id: 'favorites', label: 'Yêu Thích', icon: Heart },
   { id: 'examine', label: 'Kiểm Tra', icon: Trophy },
   { id: 'interview-prep', label: 'Phỏng Vấn', icon: Briefcase },
@@ -45,22 +41,10 @@ const App = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'a2-vocab':
+      case 'flashcards':
         return (
-          <Suspense fallback={renderFallback('text-indigo-500', 'Curating your A2 vocabulary...')}>
-            <A2Vocabulary />
-          </Suspense>
-        );
-      case 'b1-vocab':
-        return (
-          <Suspense fallback={renderFallback('text-purple-500', 'Curating your B1 vocabulary...')}>
-            <B1Vocabulary />
-          </Suspense>
-        );
-      case 'b2-vocab':
-        return (
-          <Suspense fallback={renderFallback('text-emerald-500', 'Curating your B2 vocabulary...')}>
-            <B2Vocabulary />
+          <Suspense fallback={renderFallback('text-indigo-500', 'Loading your vocabulary...')}>
+            <FlashcardsPage />
           </Suspense>
         );
       case 'examine':

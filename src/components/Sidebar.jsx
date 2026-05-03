@@ -12,9 +12,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, color: 'text-sky-500' },
-    { id: 'a2-vocab', label: 'A2 Flashcards', icon: <BookOpen className="w-5 h-5" />, color: 'text-indigo-500' },
-    { id: 'b1-vocab', label: 'B1 Flashcards', icon: <Sparkles className="w-5 h-5" />, color: 'text-purple-500' },
-    { id: 'b2-vocab', label: 'B2 Flashcards', icon: <BookMarked className="w-5 h-5" />, color: 'text-emerald-500' },
+    { id: 'flashcards', label: 'Từ vựng', icon: <BookOpen className="w-5 h-5" />, color: 'text-teal-500' },
     { id: 'favorites', label: 'Yêu Thích', icon: <Heart className="w-5 h-5" />, color: 'text-rose-500' },
     { id: 'examine', label: 'Kiểm Tra', icon: <Trophy className="w-5 h-5" />, color: 'text-rose-500' },
     { id: 'interview-prep', label: 'Interview Prep', icon: <Briefcase className="w-5 h-5" />, color: 'text-indigo-600' },

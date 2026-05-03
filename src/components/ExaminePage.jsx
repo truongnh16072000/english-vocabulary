@@ -132,58 +132,67 @@ const ExaminePage = () => {
   return (
     <div className="bg-white text-slate-900 font-sans pb-6 sm:pb-10">
       <main className="max-w-4xl mx-auto px-3 pt-3 sm:p-6 lg:p-10">
-        {/* Header */}
-        <div className="text-center mb-6 sm:mb-10">
-          <div className="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-500 to-orange-500 text-white rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6 shadow-lg shadow-rose-200">
-            <Trophy className="w-7 h-7 sm:w-10 sm:h-10" />
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-slate-800 mb-1 sm:mb-2">Kiểm Tra Từ Vựng</h1>
-          <p className="text-slate-400 font-medium italic text-sm sm:text-base">Thử thách từ vựng ở mọi cấp độ Cambridge</p>
-        </div>
+        {!quizActive && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full"
+          >
+            {/* Header */}
+            <div className="text-center mb-6 sm:mb-10">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-500 to-orange-500 text-white rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6 shadow-lg shadow-rose-200">
+                <Trophy className="w-7 h-7 sm:w-10 sm:h-10" />
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-black text-slate-800 mb-1 sm:mb-2">Kiểm Tra Từ Vựng</h1>
+              <p className="text-slate-400 font-medium italic text-sm sm:text-base">Thử thách từ vựng ở mọi cấp độ Cambridge</p>
+            </div>
 
-        {/* Level Selection */}
-        <div className="mb-5 sm:mb-8">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
-            <BookOpen className="w-4 h-4" /> Chọn cấp độ
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            {levelConfig.map(level => (
-              <button
-                key={level.id}
-                onClick={() => { setSelectedLevel(level.id); setQuizActive(false); setFilterTopic('All'); playSound('select'); }}
-                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-black transition-all border-2 active:scale-95 ${
-                  selectedLevel === level.id 
-                    ? `${level.color} text-white border-transparent shadow-lg` 
-                    : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300'
-                }`}
-              >
-                <div className="text-base sm:text-lg">{level.label}</div>
-                <div className={`text-[10px] sm:text-xs font-bold ${selectedLevel === level.id ? 'text-white/70' : 'text-slate-400'}`}>{level.count} từ</div>
-              </button>
-            ))}
-          </div>
-        </div>
+            {/* Level Selection */}
+            <div className="mb-5 sm:mb-8">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+                <BookOpen className="w-4 h-4" /> Chọn cấp độ
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                {levelConfig.map(level => (
+                  <button
+                    key={level.id}
+                    onClick={() => { setSelectedLevel(level.id); setQuizActive(false); setFilterTopic('All'); playSound('select'); }}
+                    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-black transition-all border-2 active:scale-95 ${
+                      selectedLevel === level.id 
+                        ? `${level.color} text-white border-transparent shadow-lg` 
+                        : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="text-base sm:text-lg">{level.label}</div>
+                    <div className={`text-[10px] sm:text-xs font-bold ${selectedLevel === level.id ? 'text-white/70' : 'text-slate-400'}`}>{level.count} từ</div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Topic Filter */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth">
-            <Filter className="w-5 h-5 text-slate-400 flex-shrink-0" />
-            {topics.map(topic => (
-              <button 
-                key={topic} 
-                onClick={() => { setFilterTopic(topic); setQuizActive(false); playSound('select'); }}
-                className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${
-                  filterTopic === topic 
-                    ? 'bg-rose-600 text-white border-rose-600 shadow-rose-200' 
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {topicConfig[topic].icon}
-                {topicConfig[topic].label}
-              </button>
-            ))}
-          </div>
-        </div>
+            {/* Topic Filter */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth">
+                <Filter className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                {topics.map(topic => (
+                  <button 
+                    key={topic} 
+                    onClick={() => { setFilterTopic(topic); setQuizActive(false); playSound('select'); }}
+                    className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap shadow-sm border ${
+                      filterTopic === topic 
+                        ? 'bg-rose-600 text-white border-rose-600 shadow-rose-200' 
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {topicConfig[topic].icon}
+                    {topicConfig[topic].label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Quiz Area */}
         <div className="max-w-2xl mx-auto">
@@ -324,12 +333,14 @@ const ExaminePage = () => {
         </div>
       </main>
 
-      <footer className="max-w-6xl mx-auto px-4 py-6 sm:py-10 text-center text-slate-300 hidden sm:block">
-        <div className="flex items-center justify-center gap-2 font-black tracking-widest uppercase text-xs">
-          <BookOpen className="w-4 h-4" />
-          Vocabulary Examine • All Levels
-        </div>
-      </footer>
+      {!quizActive && (
+        <footer className="max-w-6xl mx-auto px-4 py-6 sm:py-10 text-center text-slate-300 hidden sm:block">
+          <div className="flex items-center justify-center gap-2 font-black tracking-widest uppercase text-xs">
+            <BookOpen className="w-4 h-4" />
+            Vocabulary Examine • All Levels
+          </div>
+        </footer>
+      )}
     </div>
   );
 };
